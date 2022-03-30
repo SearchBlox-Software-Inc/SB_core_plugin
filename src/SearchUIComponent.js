@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import SearchComponent from './sb/SearchInput/SearchInputComponent';
 import Copyright from './sb/SearchInput/Copyright';
 import FacetFiltersComponent from './sb/FacetFilters/FacetFiltersComponent';
-import FacetFilterHeader from './sb/FacetFilters/FacetFilterHeader';
 import SelectedFilters from './sb/FacetFilters/SelectedFilters';
 import SortComponent from './sb/Sort/SortComponent';
 import RelatedQueryComponent from './sb/RelatedQuery/relatedquery.js';

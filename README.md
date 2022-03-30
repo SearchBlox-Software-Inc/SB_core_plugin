@@ -6,129 +6,110 @@ This provides documentation for the 10 core plugin.
 
 Folder Structure:
 Plugin
-	-git
-	-dist
-    	-node_modules
-   	-src
-        	|-fw
-|-css
-|-fonts
-|-less
-|-scss
-       	|-images
-       	|-sb
-			|-AdvancedFilters
-|-AdvancedFiltersDefault.js
-|-SelectedAdvancedFilters.js
-
-|-AutoSuggest
-|-AutoSuggestComponent.js
-
-|-Common
-|-Defaults.js
-|-SbCore.js
-
-|-FacetFilters
-	      |-FacetFiltersMultipleSelection
-|-FacetFiltersMultipleSelectionComponent.js
-|-SelectedFiltersInMultipleSelection.js
-|-CustomDateFilters.js
-|-FacetFiltersComponent.js
-
-|-FeaturedResults
-|-FeaturedResultsComponent.js
-                                  |- Hooks
-                                         |-GoogleCloudRecognitionConfig.js
-              		      |-index.js		
-			      |-recorder.js
-    			      |-recorderHelpers.js
-
-      |-Login
-|-LoginComponent.js
-
-|-low_level_components
-|-custom_history.js
-|-db_overlay_component.js
-|-email_overlay_component.js
-|-FileViewer.js
-|-suggest_auto_search.js
-
-|-Pagination
-|-PaginationWithNumbers.js
-|-RandomPaginationNumbers.js
-
-|-RangeSelector
-|-TuningRangeSelector.js
-
- 		           |-RelatedQuery
-      |-relatedquery.js
-
-|-SearchInput
-|-SearchInputComponent.js
-|-VoiceSearchInput.js
-
-|-SearchResults
-|-DefaultResultsComponent.js
-
-|-Sort
-|-SortComponent.js
-
-     |-topQuery
-     |-topquery.js
-
-|-normal_view_component
-
-
-|-css
-|-AdvancedFilters
-|-FacetFiltersMultipleSelection.css
-|-low_level_components
-|-advanced_filters
-|-display_selected_filters.css
-|-pagination
-|-pagination_with_page_numbers.css
-|-autosuggest_component.css
-|-display_count_component.css
-|-featured_results_component.css
-|-sort_component.css
-|-advanced_filters.css
-|-db_overlay_component.css
-|-facet_filters_component.css
-      |-login_component.css
-|-NormalViewComponent.css
-|-relatedquery_component.css
-|-result_component.css
-|-search_component.css  
-      |-topbar_search.css
-      |-topquery_component.css          
-
-        	|-App.css
- |-App.js
- |-facet.js
- |-favicon.ico
- |-favicon.png
- |-index.css
- |-index.html
- |-index.js
- |-SearchUIComponentI.js
- |-template.js
-  	-tools
-			|-build.js
-			|-buildHtml.js
-			|-buildServer.js
-			|-devServer.js
-  	-.babelrc
-  	-.eslintignore
-  	-.eslintrc
-  	-.gitignore
-  	-Dockerfile
-  	-httpd.conf
-  	-package-lock.json
-  	-package.json
-  	-webpack.config.dev
- 	-webpack.config.prod
-           -yarn.lock
-
+|-git
+|-dist
+|    |-node_modules
+|-src
+|    |-fw
+|    |    |-css
+|    |    |-fonts
+|    |    |-less
+|    |    |-scss
+|    |-images
+|    |-sb
+|	 |	  |-AdvancedFilters
+|    |    |    |-AdvancedFiltersDefault.js
+|    |    |    |-SelectedAdvancedFilters.js
+|    |    |-AutoSuggest
+|    |    |    |-AutoSuggestComponent.js
+|    |    |-Common
+|    |    |    |-Defaults.js
+|    |    |    |-SbCore.js
+|    |    |-FacetFilters
+|    |    |    |-FacetFiltersMultipleSelection
+|    |    |    |    |-FacetFiltersMultipleSelectionComponent.js
+|    |    |    |    |-SelectedFiltersInMultipleSelection.js	      
+|    |    |    |-CustomDateFilters.js
+|    |    |    |-FacetFiltersComponent.js
+|    |    |-FeaturedResults
+|    |    |    |-FeaturedResultsComponent.js
+|    |    |-Hooks
+|    |    |     |-GoogleCloudRecognitionConfig.js
+|    |    |     |-index.js
+|    |    |     |-recorder.js                                 
+|    |    |     |-recorderHelpers.js                                        
+|    |    |-Login             		      		
+|    |    |     |-LoginComponent.js			      
+|    |    |-low_level_components	      			      
+|    |    |     |-db_overlay_component.js
+|    |    |     |-email_overlay_component.js	     
+|    |    |     |-FileViewer.js
+|    |    |     |-suggest_auto_search.js
+|    |    |-Pagination
+|    |    |     |-PaginationWithNumbers.js
+|    |    |     |-RandomPaginationNumbers.js
+|    |    |-RangeSelector
+|    |    |     |-TuningRangeSelector.js
+|    |    |-RelatedQuery
+|    |    |     |-relatedquery.js
+|    |    |-SearchInput
+|    |    |     |-SearchInputComponent.js
+|    |    |     |-VoiceSearchInput.js
+|    |    |-SearchResults
+|    |    |     |-DefaultResultsComponent.js
+|    |    |-Sort
+|    |    |     |-SortComponent.js
+|    |    |-topQuery		           
+|    |    |     |-topquery.js
+|    |    |-normal_view_component     
+|    |    |-css
+|    |    |     |-AdvancedFilters
+|    |    |     |    |-FacetFiltersMultipleSelection.css
+|    |    |     |-low_level_components
+|    |    |     |    |-advanced_filters
+|    |    |     |    |    |-display_selected_filters.css
+|    |    |     |    |-pagination
+|    |    |     |    |    |-pagination_with_page_numbers.css
+|    |    |     |    |-autosuggest_component.css
+|    |    |     |    |-display_count_component.css
+|    |    |     |    |-featured_results_component.css
+|    |    |     |    |-sort_component.css      
+|    |    |     |-advanced_filters.css	 
+|    |    |     |-db_overlay_component.css	    
+|    |    |     |-facet_filters_component.css
+|    |    |     |-login_component.css
+|    |    |     |-NormalViewComponent.css
+|    |    |     |-relatedquery_component.css
+|    |    |     |-result_component.css
+|    |    |     |-search_component.css
+|    |    |     |-topbar_search.css
+|    |    |     |-topquery_component.css
+|    |-App.css
+|    |-App.js
+|    |-facet.js
+|    |-favicon.ico
+|    |-favicon.png  
+|    |-index.css
+|    |-index.html
+|    |-index.js
+|    |-SearchUIComponentI.js
+|    |-template.js
+|-tools
+|    |-build.js    
+|    |-buildHtml.js
+|    |-buildServer.js
+|    |-devServer.js
+|-.babelrc
+|-.eslintignore      
+|-.eslintrc              
+|-.gitignore
+|-Dockerfile
+|-httpd.conf
+|-package-lock.json
+|-package.json
+|-webpack.config.dev
+|-webpack.config.prod
+|-yarn.lock
 
 
 .git
