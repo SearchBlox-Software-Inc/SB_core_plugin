@@ -32,7 +32,6 @@ module.exports = {
           loader: "babel-loader"
         }
       },
-      // {test: /\.txt$/, use: "raw-loader"},
       {test: /\.css$/, use: [
         {loader: "style-loader"},
         {loader: "css-loader"},
@@ -53,13 +52,8 @@ module.exports = {
     ]
   },
   plugins: [
-    // new HtmlWebpackPlugin({template: './src/index.html'}),
-    // new webpack.noErrorsPlugin(),
     new webpack.DefinePlugin(GLOBALS),
     new ExtractTextPlugin('styles.css'),
-    // new webpack.optimize.DedupePlugin(),
-    // new webpack.optimize.UglifyJsPlugin(),
-    // new CopyWebpackPlugin([{ from: './src/sb_config.js'}])
     new CopyWebpackPlugin([{ from: './src/favicon.ico'}]),
     new CopyWebpackPlugin([{ from: './src/favicon.png'}]),
     new CopyWebpackPlugin([{ from: './src/facet.js'}])

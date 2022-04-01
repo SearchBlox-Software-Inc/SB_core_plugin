@@ -26,11 +26,7 @@ module.exports = {
         test: /\.js$/,
         include: path.join(__dirname, 'src'),
         loaders: ['babel-loader']
-        // use: {
-        //   loader: "babel-loader"
-        // }
       },
-      // {test: /\.txt$/, use: "raw-loader"},
       {test: /\.css$/, use: [
         {loader: "style-loader"},
         {loader: "css-loader"},
@@ -51,10 +47,7 @@ module.exports = {
     ]
   },
   plugins: [
-    // new HtmlWebpackPlugin({template: './src/index.html'}),
     new webpack.HotModuleReplacementPlugin(),
-    // new webpack.NoErrorsPlugin()
-    // new CopyWebpackPlugin([{ from: './src/sb_config.js', to: 'dist' }])
   ],
   devServer: {
     contentBase: "./src",
