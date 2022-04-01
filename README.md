@@ -2,9 +2,9 @@
 
 #**Overview:**
 This documentation provides following details for the 10 core plugin.
--Plugin Folder Structure and it's brief explnation.
--Steps to run REACT Plugin in local machine.
--Steps to upload plugin in SearchBlox
+- Plugin Folder Structure and it's brief explnation.
+- Steps to run REACT Plugin in local machine.
+- Steps to upload plugin in SearchBlox
 
 #**Folder Structure:**
 ```
@@ -285,7 +285,7 @@ We can create custom templates in admin console and providing that template name
 #**STEPS TO RUN REACT PLUGIN LOCALLY**
 
 **Installation:**
-Install node.js using the link below:
+Install node.js using the link below (probably 14 or higher):
 https://nodejs.org/en/download/
 
 **Steps to Import node modules into project:**
@@ -299,12 +299,12 @@ IV. Plugin will be opened in default browser with port number 9010 as mentioned 
 
 #**Steps to Upload Plugins in SearchBlox:**
 
--To upload a custom plugin through UI, it should be in zip file format. Rename the zip file for the plugin (whatever the custom plugin name you prefer. Eg: customui.zip).
--Start SearchBlox service. To install and start SearchBlox refer the following link:
+- To upload a custom plugin through UI, it should be in zip file format. Rename the zip file for the plugin (whatever the custom plugin name you prefer. Eg: customui.zip).
+- Start SearchBlox service. To install and start SearchBlox refer the following link:
 https://developer.searchblox.com/docs/installing-searchblox-on-windows
--Once SearchBlox is started, From Admin Console, Go to Dashboard > Collections > Search Settings Tab and click on the Upload Search Template button.
--Choose the Custom Plugin zip file and click on the open button.
--Once custom plugin upload is done you will see the 'Upload Plugin' section goes off from the screen. You can check that the custom plugin name folder is available in <SEARCHBLOX_INSTALLATION_PATH>/webapps/ROOT/.
--Then, you can access the custom plugin using the following link:
+- Once SearchBlox is started, From Admin Console, Go to Dashboard > Collections > Search Settings Tab and click on the Upload Search Template button.
+- Choose the Custom Plugin zip file and click on the open button.
+- Once custom plugin upload is done you will see the 'Upload Plugin' section goes off from the screen. You can check that the custom plugin name folder is available in <SEARCHBLOX_INSTALLATION_PATH>/webapps/ROOT/.
+- Then, you can access the custom plugin using the following link:
 https://localhost:8443/customui/index.html
--You can make the custom plugin facet.js configuration before/after the plugin upload.
+- You can make the custom plugin facet.js configuration before/after the plugin upload.

@@ -6,16 +6,14 @@ import SelectedFilters from './sb/FacetFilters/SelectedFilters';
 import SortComponent from './sb/Sort/SortComponent';
 import RelatedQueryComponent from './sb/RelatedQuery/relatedquery.js';
 import TopQueryComponent from './sb/topQuery/topquery.js';
-import FeaturedResultsComponent from './sb/FeaturedResults/FeaturedResultsComponent';//---
+import FeaturedResultsComponent from './sb/FeaturedResults/FeaturedResultsComponent';
 import PaginationWithPageNumbers from './sb/Pagination/PaginationWithNumbers';
-import * as defaults from './sb/Common/Defaults';//---
+import * as defaults from './sb/Common/Defaults';
 import * as parser from './sb/Common/SbCore';
 import PropTypes from 'prop-types';
 import './sb/css/search_component.css';
 import * as $ from 'jquery';
 import 'bootstrap/dist/js/bootstrap.js';
-
-// import { BrowserRouter as Router, Route, NavLink, Link } from 'react-router-dom';
 import SuggestAutoSearch from './sb/low_level_components/suggest_auto_search';
 import * as qs from 'query-string';
 import './App.css';
@@ -23,8 +21,6 @@ import './App.css';
 import NormalViewComponent from './sb/normal_view_component';
 import { history } from './sb/low_level_components/custom_history';
 import * as moment from 'moment';
-// let sbLogo = require("./images/sb_logo.gif");
-// let SBLogo_Trans = require("./images/SBLogo_Trans.png");
 import JSONPretty from 'react-json-pretty';
 import dateFormat from 'dateformat';
 import {
@@ -37,7 +33,6 @@ import {
   UncontrolledDropdown,
   Dropdown
 } from "reactstrap";
-// import { param } from 'jquery';
 
 const uparrow = require("./images/up-arrow.png");
 
@@ -77,12 +72,7 @@ class SearchUIComponent extends Component {
 
   componentWillMount(){
     if(window.location.search !== ""){
-      // this.doSearch();
       this.doSearch(this.state.parameters);
-        // this.doSearch({
-        //   ...this.state.parameters,
-        //   facetonly:true,
-        // });
     }
   }
 
@@ -134,10 +124,6 @@ class SearchUIComponent extends Component {
           parameters: Object.assign({}, qs.parse(route.search))
         }, () => {
           this.doSearch(this.state.parameters);
-            // this.doSearch({
-            //   ...this.state.parameters,
-            //   facetonly:true
-            // });
         });
       }
       else{
@@ -374,8 +360,6 @@ class SearchUIComponent extends Component {
           response.resultInfo.query = queryTemp.join(" ") + " ...";
         }
     }
-    // let todayTime = parameters['f.'+date+'.filter'];
-    // let month = Intl.DateTimeFormat({year:"numeric"}).format(todayTime)
     return(
       <Fragment>
         <div className="searchGrid">
@@ -396,22 +380,6 @@ class SearchUIComponent extends Component {
                   {
                     (response.results && response.resultInfo && response.resultInfo.hits >= 0) &&
                       <ul style={{margin:"11px 0 0",paddingLeft:"0px"}}>
-                        {/*<UncontrolledDropdown className="facetDropdown" nav>
-                          <DropdownToggle
-                            aria-haspopup
-                            caret
-                            color="default"
-                            id="navbarSort"
-                            nav>
-                            <img width="16" height="16" src={require('./images/sorter.png')}/>
-                            <span className="header-tabs-text">{parameters.sort}</span>
-                          </DropdownToggle>
-                          <DropdownMenu aria-labelledby="navbarSort" className="navbarSort" right>
-                            <DropdownItem>
-                              <SortComponent/>
-                            </DropdownItem>
-                          </DropdownMenu>
-                        </UncontrolledDropdown>*/}
                         <li className="navbarSort">
                           <button onClick={this.dropdownFunc} className="dropbtn" title={(parameters.sort1)?(parameters.sort1.toUpperCase()):parameters.sort?(parameters.sort.toUpperCase()):""}>
                             <img width="16" height="16" src={require('./images/sorter.png')} alt="sort dropdown"/>
@@ -493,10 +461,6 @@ class SearchUIComponent extends Component {
                (response.resultInfo.query && !parameters.mlt_id) && <span> Search took <b>{(parseInt(response.resultInfo.time, 10)/1000).toFixed(3)} </b> Seconds.</span>
                }
               </div>
-             {/* {
-              (!parameters.mlt_id && parameters.sort) &&
-              <div><p className="mb-0">Sort: <span className="text-capitalize">{parameters.sort}</span></p></div>
-            } */}
             </div>
 
             {
@@ -507,10 +471,6 @@ class SearchUIComponent extends Component {
             ((parameters.relatedQuery && parameters.relatedQuery === 'true' && parameters.page === "1") || (defaults.relatedQuery && parameters.page === "1")) &&
             <RelatedQueryComponent results={parameters['query']} />
             }
-            {/*
-            ((parameters.topQuery && parameters.topQuery === 'true' && parameters.page === "1") || (defaults.topQuery && parameters.page === "1")) &&
-            <TopQueryComponent/>
-            */}
           </Fragment>
           )
           }
