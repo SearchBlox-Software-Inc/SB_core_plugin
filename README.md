@@ -260,13 +260,14 @@ Each custom date field should have the same date format for all documents at col
 
 **"tuneTemplate": “WEB”**
    -By default tuning template is set to WEB.tuning values of web template
-We can create custom templates in admin console and providing that template name in
+We can create custom templates in admin console and providing that template name in.
 **“voiceSearch”: “false”**
    -Voice search can be enabled in plugin by making  it to true.
 **"debug":false**
    -Making this to true will display the response in JSON format in UI.
 **"autologout":true**
    -By making autologout to true  ,if the user is inactive on the page more than certain period of time , page will automatically logout and displays login page in UI
+   
 **"voiceSearchAPI":"https://demo.searchblox.com:8443/searchblox/rest/v2/api/speech/text"**
 **"defaultType":"OR"**
    -To meet  search requirements efficiently, we added this feature ‘defaultType’ and value is given as OR so when multiple words are given in a search query, all words will be considered from a document and served in the search page.
@@ -285,8 +286,8 @@ We can create custom templates in admin console and providing that template name
 #**STEPS TO RUN REACT PLUGIN LOCALLY**
 
 **Installation:**
-Install node.js using the link below (probably 14 or higher):
-https://nodejs.org/en/download/
+- Install node.js using the link below (probably 14 or higher):
+- https://nodejs.org/en/download/
 
 **Steps to Import node modules into project:**
 I.  Open the command prompt with plugin path (Eg:  C:\plugin)
