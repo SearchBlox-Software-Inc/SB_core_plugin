@@ -267,7 +267,7 @@ We can create custom templates in admin console and providing that template name
    -Making this to true will display the response in JSON format in UI.
 **"autologout":true**
    -By making autologout to true  ,if the user is inactive on the page more than certain period of time , page will automatically logout and displays login page in UI
-   
+
 **"voiceSearchAPI":"https://demo.searchblox.com:8443/searchblox/rest/v2/api/speech/text"**
 **"defaultType":"OR"**
    -To meet  search requirements efficiently, we added this feature ‘defaultType’ and value is given as OR so when multiple words are given in a search query, all words will be considered from a document and served in the search page.
@@ -297,6 +297,9 @@ II. Use the command “npm install” to get all the dependencies into the proje
 III. Use the command “npm start” to run the plugin.
 
 IV. Plugin will be opened in default browser with port number 9010 as mentioned in the file tools/devserver.js
+
+V. If plugin is running outside of SearchBlox Server (i.e., local environment), We need to configure the pluginDomain in src/facet.js to get the results.
+eg: "pluginDomain": "https://13.10.24.161:8443"
 
 #**Steps to Upload Plugins in SearchBlox:**
 
