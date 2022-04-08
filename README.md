@@ -49,20 +49,20 @@ Plugin
 |    |    |     |-FileViewer.js										#To show pdf content type results in an overlay using react package "react-file-viewer"
 |    |    |     |-suggest_auto_search.js							#Has Suggested query instead of actual query given in input field.
 |    |    |     |-custom_history.js									#Used for modern web browser that supports HTML history API.								
-|    |    |-Pagination												#CustomPagination.js,Pagination component. After clicking a particular page, that page number is set into  local storage and triggered  corresponding tab’s doSearch().
+|    |    |-Pagination												#PaginationWithPageNumbers.js,Pagination component.  After clicking a particular page, that page number is passed to url parameters using getResults().
 |    |    |     |-PaginationWithNumbers.js
 |    |    |     |-RandomPaginationNumbers.js
 |    |    |-RangeSelector
 |    |    |     |-TuningRangeSelector.js							#Has range sliders with tuning values minimum “0” and maximum “100”.
 |    |    |-RelatedQuery
-|    |    |     |-relatedquery.js									#related queries are shown in all other tabs except “ALL” tab  based on the query we search.
+|    |    |     |-relatedquery.js									#related queries are shown based on the query we search.
 |    |    |-SearchInput
 |    |    |     |-SearchInputComponent.js							#Has a search input field and autosuggestion component.For more details check SearchInputComponent.js section below.
 |    |    |     |-VoiceSearchInput.js								#Renders an mic in UI, on-click of which calls speech startSpeechToText of hooks component is is used and converted into text and after conversion stopSpeechToText of hooks is used to stop recording of voice.
 |    |    |-SearchResults
 |    |    |     |-DefaultResultsComponent.js						#Component which has all results in response and uses <Result /> to display each result.
 |    |    |-Sort
-|    |    |     |-SortComponent.js									#This component is rendered under resources tab as facet.Function 'doSort()' is to sort values selected by the user are read, search is initiated.
+|    |    |     |-SortComponent.js									#Function 'doSort()' is to sort values selected by the user are read, search is initiated.
 |    |    |-topQuery		           
 |    |    |     |-topquery.js 										#popular searches are shown in this component.
 |    |    |-normal_view_component                                   #Has featured_results_component, results_component, pagination_component, imported and aligned at the right above of the search results.     
@@ -222,17 +222,18 @@ Each custom date field should have the same date format for all documents at col
 
 **“autoSuggestLimit”** - to limit the number of auto suggestion to display in UI
 
-**suggestSearch:** - if a particular query has no results and has a suggestion term , that term is taken as a query and  search is triggered in every tab except “ALL”  tab.
+**suggestSearch:** - if a particular query has no results and has a suggestion term , that term is taken as a query and  search is triggered.
 
 **“smartAutoSuggestSettings”:{...}** - smart auto suggestion needs a smart suggest link to use the feature. You will need to set up basic configuration info with this section.
 
 **“showTrendingData”** - making this to true will render a trending component which is a combination of smart suggestions and top suggestion on keydown of search box.
 
-**"adsDisplay":"true"**- This is related to Featured Results (Key Matches) Displa except in “All”  tab.
+**"adsDisplay":"true"**- This is related to Featured Results (Key Matches) Display. Featured Results will display only when it is true.
 
 **"featuredResultsCount":**- This parameter value controls the number of featured results  to be displayed in the front-end search page.
 
-**"relatedQuery":{"field":"true"}** -If field value is true, related queries will appear in the UI except in ALL tab .
+**"relatedQuery":{"field":"true"}** -If the field value is true, related queries will appear in the UI.
+"relatedQueryFields":
 
 **"relatedQueryFields":**
 
