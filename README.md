@@ -26,7 +26,7 @@ Plugin
 |    |    |-AutoSuggest
 |    |    |    |-AutoSuggestComponent.js							#Component has autosuggestions.For example, Response data of getAutoSuggest().
 |    |    |-Common
-|    |    |    |-Defaults.js										#Facet.json is imported and read, all the data in facet.json is stored into different variables.
+|    |    |    |-Defaults.js										#Facet.js is imported and read, all the data in facet.js is stored into different variables.
 |    |    |    |-SbCore.js											#Check SbCore.js section below for details.
 |    |    |-FacetFilters
 |    |    |    |-FacetFiltersMultipleSelection
@@ -44,7 +44,7 @@ Plugin
 |    |    |-Login             		      		
 |    |    |     |-LoginComponent.js									#Login part with username , password and input validations.		      
 |    |    |-low_level_components	      			      
-|    |    |     |-db_overlay_component.js							#DB overlay component which shows the data specified in dataToBeDisplayed in facet.json.
+|    |    |     |-db_overlay_component.js							#DB overlay component which shows the data specified in dataToBeDisplayed in facet.js.
 |    |    |     |-email_overlay_component.js						#To show email related content results.	     
 |    |    |     |-FileViewer.js										#To show pdf content type results in an overlay using react package "react-file-viewer"
 |    |    |     |-suggest_auto_search.js							#Has Suggested query instead of actual query given in input field.
@@ -122,7 +122,7 @@ Plugin
 *getAutoSuggest()* - sends a request to SearchBloxServer for auto- suggestion list and returns the response.
 *getSuggestClickCount()*- function to track which  suggestions are clicked in to analytics
 *getFeaturedResultClickCount()* - function to track which  suggestions are clicked in to analytics
-*getInitialUrlParameters()* - function to parse the facets in facet.json and initial url parameters page, pagesize, sortdir, sort, col on page load.
+*getInitialUrlParameters()* - function to parse the facets in facet.js and initial url parameters page, pagesize, sortdir, sort, col on page load.
 *clearAllFilters()*- function to clear applied filters whenever search term is changed.
 *getDocumentClickCount()*- function to track page click into analytics.
 *getResults()* - formats the url parameters and loads the page each time search is done.
@@ -139,7 +139,7 @@ If an already different filter exists in the same type then added to the array.
 *clearAllFilters()* - clears all applied filters
 
 **SearchInputComponent.js:**
-In changeSearchInput(), input field value is set state as query and in searchEnter() function enterupdate is set as true if keycode 13(I.e., enter) and that query is passed into getInitialUrlParameters() which parses the facets in facet.json
+In changeSearchInput(), input field value is set state as query and in searchEnter() function enterupdate is set as true if keycode 13(I.e., enter) and that query is passed into getInitialUrlParameters() which parses the facets in facet.js
 On load, url params and using the function getResults will get a response for the query in the input field.
 
 **App.js:**
@@ -162,6 +162,8 @@ if(autoSuggestSettings){
 
 **customDateSettings: {}** - Custom date settings can be configured to display any custom date facet filters.
 You can define ‘customDateField’ with your custom date filter as well as enable this setting to be shown in the plugin page using setting ‘customDateEnable:true’. You can also set the custom date display name as per your requirement using property ‘customDateDisplayText’..
+
+**"collection":[]** - One or more collections will be considered from where search results will be served. Here we will provide collection IDs as values. Multiple collection IDs can be given using comma as a seperator. If you don’t give any value, search results will be served from all available collections.
 
 **"sortBtns":[]:**
 ```
