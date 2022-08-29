@@ -2,11 +2,13 @@
 
 #**Overview:**
 This documentation provides following details for the 10 core plugin.
+
 - Plugin Folder Structure and it's brief explnation.
 - Steps to run REACT Plugin in local machine.
 - Steps to upload plugin in SearchBlox
 
 #**Folder Structure:**
+
 ```
 Plugin
 |-git																#Created in the repository when we push code to bitbucket.
@@ -20,18 +22,19 @@ Plugin
 |    |    |-scss
 |    |-images														#Images used in the plugin are added here. Multiple folders related to images can be added here.
 |    |-sb
-|	 |	  |-AdvancedFilters
+|    |	 |-AdvancedFilters
 |    |    |    |-AdvancedFiltersDefault.js							#Component which displays the advanced filters given in facet.js.
 |    |    |    |-SelectedAdvancedFilters.js							#removeAdvancedFilter()-removes the advanced filters by deleting the current state field by checking whether field is a string, array, or object
 |    |    |-AutoSuggest
 |    |    |    |-AutoSuggestComponent.js							#Component has autosuggestions.For example, Response data of getAutoSuggest().
+|    |    |    |-TrendingComponent.js                       #Component to display trending search terms in the input dropdown when input is empty. This is disabled by default in facet.js.
 |    |    |-Common
 |    |    |    |-Defaults.js										#Facet.js is imported and read, all the data in facet.js is stored into different variables.
 |    |    |    |-SbCore.js											#Check SbCore.js section below for details.
 |    |    |-FacetFilters
 |    |    |    |-FacetFiltersMultipleSelection
 |    |    |    |    |-FacetFiltersMultipleSelectionComponent.js		#Used to apply multiple filters at a time.
-|    |    |    |    |-SelectedFiltersInMultipleSelection.js			#Displays multiple selected filters at once with close icon to right.We can delete the applied filters.      
+|    |    |    |    |-SelectedFiltersInMultipleSelection.js			#Displays multiple selected filters at once with close icon to right.We can delete the applied filters.
 |    |    |    |-CustomDateFilters.js								#Will display a custom date facet.Useful in performing searches using custom dates.
 |    |    |    |-FacetFiltersComponent.js							#Check FacetFiltersComponent.js section below for details.
 |    |    |-FeaturedResults
@@ -39,17 +42,17 @@ Plugin
 |    |    |-Hooks													#Has code regarding voice recognition and converting it into text.
 |    |    |     |-GoogleCloudRecognitionConfig.js
 |    |    |     |-index.js
-|    |    |     |-recorder.js                                 
-|    |    |     |-recorderHelpers.js                                        
-|    |    |-Login             		      		
-|    |    |     |-LoginComponent.js									#Login part with username , password and input validations.		      
-|    |    |-low_level_components	      			      
+|    |    |     |-recorder.js
+|    |    |     |-recorderHelpers.js
+|    |    |-Login
+|    |    |     |-LoginComponent.js									#Login part with username , password and input validations.
+|    |    |-low_level_components
 |    |    |     |-db_overlay_component.js							#DB overlay component which shows the data specified in dataToBeDisplayed in facet.js.
-|    |    |     |-email_overlay_component.js						#To show email related content results.	     
-|    |    |     |-FileViewer.js										#To show pdf content type results in an overlay using react package "react-file-viewer"
+|    |    |     |-email_overlay_component.js						#To show email related content results.
+|    |    |     |-PDFViewer.js										#To show pdf content type results in an overlay using react package "react-pdf"
 |    |    |     |-suggest_auto_search.js							#Has Suggested query instead of actual query given in input field.
-|    |    |     |-custom_history.js									#Used for modern web browser that supports HTML history API.								
-|    |    |-Pagination												#PaginationWithPageNumbers.js,Pagination component.  After clicking a particular page, that page number is passed to url parameters using getResults().
+|    |    |     |-custom_history.js									#Used for modern web browser that supports HTML history API.
+|    |    |-Pagination												   #PaginationWithPageNumbers.js,Pagination component.  After clicking a particular page, that page number is passed to url parameters using getResults().
 |    |    |     |-PaginationWithNumbers.js
 |    |    |     |-RandomPaginationNumbers.js
 |    |    |-RangeSelector
@@ -61,11 +64,16 @@ Plugin
 |    |    |     |-VoiceSearchInput.js								#Renders an mic in UI, on-click of which calls speech startSpeechToText of hooks component is is used and converted into text and after conversion stopSpeechToText of hooks is used to stop recording of voice.
 |    |    |-SearchResults
 |    |    |     |-DefaultResultsComponent.js						#Component which has all results in response and uses <Result /> to display each result.
+|    |    |-SmartFAQs
+|    |    |     |-FAQItem.js                                #Common component for each togglable FAQ, it includes the question, its answer, the URL to the page with more details and buttons for voting
+|    |    |     |-SmartFAQsComponent.js                     #Main component for displaying smartFAQs that are received in the list API call. The SelectedSmartFAQ component is also a part of this and is displayed on top of the regular list of FAQs in the UI.
+|    |    |     |-SuggestedSmartFAQs.js                     #FAQs displayed in the input dropdown, below the auto-suggested items. Clicking on a particular suggested FAQ displays its particular details in the SelectedSmartFAQ UI mentioned above.
 |    |    |-Sort
 |    |    |     |-SortComponent.js									#Function 'doSort()' is to sort values selected by the user are read, search is initiated.
-|    |    |-topQuery		           
+|    |    |-topQuery
 |    |    |     |-topquery.js 										#popular searches are shown in this component.
-|    |    |-normal_view_component                                   #Has featured_results_component, results_component, pagination_component, imported and aligned at the right above of the search results.     
+|    |    |     |-TopQuerySuggestions.js 							#popular searches that are shown at the bottom of the input dropdown.
+|    |    |-normal_view_component                                   #Has featured_results_component, results_component, pagination_component, imported and aligned at the right above of the search results.
 |    |    |-css														#Has style files for respective jsx files.
 |    |    |     |-AdvancedFilters
 |    |    |     |    |-FacetFiltersMultipleSelection.css
@@ -77,35 +85,37 @@ Plugin
 |    |    |     |    |-autosuggest_component.css
 |    |    |     |    |-display_count_component.css
 |    |    |     |    |-featured_results_component.css
-|    |    |     |    |-sort_component.css      
-|    |    |     |-advanced_filters.css	 
-|    |    |     |-db_overlay_component.css	    
+|    |    |     |    |-sort_component.css
+|    |    |     |-advanced_filters.css
+|    |    |     |-db_overlay_component.css
 |    |    |     |-facet_filters_component.css
 |    |    |     |-login_component.css
 |    |    |     |-NormalViewComponent.css
 |    |    |     |-relatedquery_component.css
 |    |    |     |-result_component.css
 |    |    |     |-search_component.css
+|    |    |     |-smartFAQs.css
 |    |    |     |-topbar_search.css
 |    |    |     |-topquery_component.css
-|    |-App.css														#Styles for App.js component											 
+|    |-App.css														#Styles for App.js component
 |    |-App.js														#Has login and searchUIComponents.For more details check App.js section below.
-|    |-facet.js														#Configuration file that provides options to provide search results as required.For more details check Facet.js section below.
-|    |-favicon.ico													#Logo of URL.
-|    |-favicon.png													#Logo of URL to support icons in all browsers.  
+|    |-facet.js													#Configuration file that provides options to provide search results as required.For more details check Facet.js section below.
+|    |-favicon.ico												#Logo of URL.
+|    |-favicon.png												#Logo of URL to support icons in all browsers.
 |    |-index.css													#Common styles for plugins.
 |    |-index.html													#Root file for the plugin view where the app is initiated using ID.Root and all scripts are included.
-|    |-index.js														#Binds the App.js component with root id using in index.html.
-|    |-SearchUIComponentI.js										#Check SearchUIComponent.js section below for details.
+|    |-index.js													#Binds the App.js component with root id using in index.html.
+|    |-SearchUIComponentI.js									#Check SearchUIComponent.js section below for details.
+|    |-VoiceContext.js										   #Creates context for voice search.
 |    |-template.js
 |-tools																#Check tools section below for details.
-|    |-build.js    
+|    |-build.js
 |    |-buildHtml.js
 |    |-buildServer.js
 |    |-devServer.js
 |-.babelrc															#This will be used to maintain browser compatibility.
-|-.eslintignore      
-|-.eslintrc															#This will help in identifying and reporting on patterns found in ECMAScript/JavaScript code, with the goal of making code more consistent and avoiding bugs.              
+|-.eslintignore
+|-.eslintrc															#This will help in identifying and reporting on patterns found in ECMAScript/JavaScript code, with the goal of making code more consistent and avoiding bugs.
 |-.gitignore														#.gitignore file is used to configure files that shouldn't be uploaded to bit-bucket.
 |-Dockerfile														#These will be used for deployment purposes.
 |-httpd.conf														#These will be used for deployment purposes.
@@ -117,26 +127,33 @@ Plugin
 ```
 
 **SbCore.js:**
-*getSBResponse()* - getSBResponse function, checks the url parameters, and uses the same parameters to send a request to the searchblox server and returns the response.
-*urlCheck()*- to function to check response URL includes any navigation domains mentione din facet.js
-*getAutoSuggest()* - sends a request to SearchBloxServer for auto- suggestion list and returns the response.
-*getSuggestClickCount()*- function to track which  suggestions are clicked in to analytics
-*getFeaturedResultClickCount()* - function to track which  suggestions are clicked in to analytics
-*getInitialUrlParameters()* - function to parse the facets in facet.js and initial url parameters page, pagesize, sortdir, sort, col on page load.
-*clearAllFilters()*- function to clear applied filters whenever search term is changed.
-*getDocumentClickCount()*- function to track page click into analytics.
-*getResults()* - formats the url parameters and loads the page each time search is done.
-*parseAppliedFiltersFromUrl()* - reads the URL and brings all the applied filters into a single format, so that we can display the selected filters.
-*parseSBResponse()* - function to format response into required way.
+_getSBResponse()_ - getSBResponse function, checks the url parameters, and uses the same parameters to send a request to the searchblox server and returns the response.
+_urlCheck()_- to function to check response URL includes any navigation domains mentioned in facet.js .
+_getAutoSuggest()_ - sends a request to SearchBloxServer for auto- suggestion list and returns the response.
+_getSuggestClickCount()_- function to track which suggestions are clicked in to analytics.
+_getFeaturedResultClickCount()_ - function to track which suggestions are clicked in to .
+_getInitialUrlParameters()_ - function to parse the facets in facet.js and initial url parameters page, pagesize, sortdir, sort, col on page load.
+_clearAllFilters()_- function to clear applied filters whenever search term is changed.
+_getDocumentClickCount()_- function to track page click into analytics.
+_getResults()_ - formats the url parameters and loads the page each time search is done.
+_parseAppliedFiltersFromUrl()_ - reads the URL and brings all the applied filters into a single format, so that we can display the selected filters.
+_parseSBResponse()_ - function to format response into required way.
+_refactorToArray()_ - common function to refactor data into an array.
+_getTrendingData()_ - function to retrieve trending search data based on cname configured in facet.js .
+_getSmartFAQS()_ - function to retrieve list of FAQs for a particular query using a get API call.
+_getSelectedSmartFAQ()_ - function to retrieve details of a particular FAQ based on uid.
+_getSelectedSmartFAQ()_ - function to retrieve details of a particular FAQ based on uid.
+_callSmartFAQAction()_ - function to track actions that occur on a particular FAQ- show, open, upvote and downvote.
+_smartFaqDisplayCount()_ - function to track impressions of a particular set of FAQs.
 
 **FacetFiltersComponent.js:**
 Renders the facets and has <Facet /> component for each facet in facets.
-*toggleFilter()* - toggles filters.
+_toggleFilter()_ - toggles filters.
 Checks if filter already exists. Checks are based on current URL.
 If filter exists then checks are done if array/string/existing filters are removed. If filter doesn't exist, then it is added as a string.
 If an already different filter exists in the same type then added to the array.
-*facetToggle()* - slideToggle facets
-*clearAllFilters()* - clears all applied filters
+_facetToggle()_ - slideToggle facets
+_clearAllFilters()_ - clears all applied filters
 
 **SearchInputComponent.js:**
 In changeSearchInput(), input field value is set state as query and in searchEnter() function enterupdate is set as true if keycode 13(I.e., enter) and that query is passed into getInitialUrlParameters() which parses the facets in facet.js
@@ -149,14 +166,14 @@ On load, url params and using the function getResults will get a response for th
 **Facet.js:**
 Properties- Brief Explanation:
 *Facet.js is the configuration file that provides options which can be configured to provide search results as required. This document will let you know about each parameter that has been used with the related front end.
-*Few parameters for facet.js can be passed from index.html (eg:sb_autosuggest,sb_facet_settings,sb_plugin_domain) and these parameters are considered as priority to values added in facet,js file
-*Eg:* let facetSettings = document.getElementById("sb_facet_settings");
+*Few parameters for facet.js can be passed from index.html (eg:sb*autosuggest,sb_facet_settings,sb_plugin_domain) and these parameters are considered as priority to values added in facet,js file
+\_Eg:* let facetSettings = document.getElementById("sb_facet_settings");
 window.autoSuggestObject = {};
 let autoSuggestSettings = document.getElementById("sb_autosuggest");
 if(autoSuggestSettings){
-  window.autoSuggestObject.showAutoSuggest = autoSuggestSettings.value;
+window.autoSuggestObject.showAutoSuggest = autoSuggestSettings.value;
 }
-*These values are read in facet.js file .
+\*These values are read in facet.js file .
 
 **"facets":[]** - Facets or search filters will be shown in the UI so that user can filter search results to make search easier.
 
@@ -166,6 +183,7 @@ You can define ‘customDateField’ with your custom date filter as well as ena
 **"collection":[]** - One or more collections will be considered from where search results will be served. Here we will provide collection IDs as values. Multiple collection IDs can be given using comma as a seperator. If you don’t give any value, search results will be served from all available collections.
 
 **"sortBtns":[]:**
+
 ```
 "sortBtns":[
   {"field":"<metaDateField>","display":"Date ",checkedvalue:””},
@@ -173,13 +191,14 @@ You can define ‘customDateField’ with your custom date filter as well as ena
  {"field":"relevance","display":"Relevance with MRank",checkedvalue:”mrank”}
 ]
 ```
--SortBtns parameter is used to display a list of sorting filters that are being used for the UI. Here we are using ‘Date’ , ‘Relevance’ and “Relevance with MRank '' as per  requirement.
+
+-SortBtns parameter is used to display a list of sorting filters that are being used for the UI. Here we are using ‘Date’ , ‘Relevance’ and “Relevance with MRank '' as per requirement.
 
 By default metaDateField is lastmodified. You can customize it as per your requirement.
 
-*<metaDateField>* - date display will be considered from metaDateField value. By default it was mentioned “lastmodified” as value.
+_<metaDateField>_ - date display will be considered from metaDateField value. By default it was mentioned “lastmodified” as value.
 
-*For plugin added custom date fields below are the list of custom date formats considered by SearchBlox:
+\*For plugin added custom date fields below are the list of custom date formats considered by SearchBlox:
 
 ```
 metaDateField
@@ -205,11 +224,13 @@ YYYY-MM-DD hh:mm:ssZ
 Each custom date field should have the same date format for all documents at collection level.
 
 **"facetFiltersOrder":[]:**
+
 ```
 "facetFiltersOrder":[
   "Facetfield1”,”facetfield2”,”facetfield3”
 ]
 ```
+
 - We can define the order of the facet filters.
 
 **“facetsFiltersDisplay”:**- To show the facet filters on the plugin page, this setting has to be enabled.
@@ -224,15 +245,13 @@ Each custom date field should have the same date format for all documents at col
 
 **“autoSuggestLimit”** - to limit the number of auto suggestion to display in UI
 
-**suggestSearch:** - if a particular query has no results and has a suggestion term , that term is taken as a query and  search is triggered.
+**suggestSearch:** - if a particular query has no results and has a suggestion term , that term is taken as a query and search is triggered.
 
 **“smartAutoSuggestSettings”:{...}** - smart auto suggestion needs a smart suggest link to use the feature. You will need to set up basic configuration info with this section.
 
-**“showTrendingData”** - making this to true will render a trending component which is a combination of smart suggestions and top suggestion on keydown of search box.
-
 **"adsDisplay":"true"**- This is related to Featured Results (Key Matches) Display. Featured Results will display only when it is true.
 
-**"featuredResultsCount":**- This parameter value controls the number of featured results  to be displayed in the front-end search page.
+**"featuredResultsCount":**- This parameter value controls the number of featured results to be displayed in the front-end search page.
 
 **"relatedQuery":{"field":"true"}** -If the field value is true, related queries will appear in the UI.
 "relatedQueryFields":
@@ -240,47 +259,53 @@ Each custom date field should have the same date format for all documents at col
 **"relatedQueryFields":**
 
 **relatedQueryFields: {...}**
-   -If you use related queries, you will need to provide all the required configuration here.
+-If you use related queries, you will need to provide all the required configuration here.
 **{"apikey":"","field":"content","operator":"and","limit":"5","terms":"10","type":"phrase","col":"12"}**
-   -You will need to configure relatedQueryFields properties such as:
-*apikey* - You will need to add index server’s api key.
-*field* - related queries will be considered from search result title based on given search term. You can configure it to any SearchBlox field such as content etc.
-*operator*- If search term has multiple words or operator will be considered. You can switch it to AND for accurate results.
-*limit* - Its the limit for Number of related queries display.
-*terms* - Narrow search results can be shown up to 10 terms(words) you can alter it based on your requirement.
-*type* - related search response display type is phrase.
-*col* - This is nothing but a collection ID to consider related queries from.
+-You will need to configure relatedQueryFields properties such as:
+_apikey_ - You will need to add index server’s api key.
+_field_ - related queries will be considered from search result title based on given search term. You can configure it to any SearchBlox field such as content etc.
+_operator_- If search term has multiple words or operator will be considered. You can switch it to AND for accurate results.
+_limit_ - Its the limit for Number of related queries display.
+_terms_ - Narrow search results can be shown up to 10 terms(words) you can alter it based on your requirement.
+_type_ - related search response display type is phrase.
+_col_ - This is nothing but a collection ID to consider related queries from.
+
+**smartFAQSettings: {...}** - configure if smartFAQs needs to be part of the UI. This is enabled by default. Settings such as default count, load-more count and limit can be configured here.
+
+**suggestSmartFAQs: {...}** - configure if smartFAQ suggestions needs to be part of the input dropdown in UI. This is enabled by default. The number of suggestions that need to be displayed can be configured here.
+
+**trendingSearch: {...}** - configure if trending searches needs to be part of the UI in the dropdown. This is disabled by default. Settings such as cname and limit need to be configured here.
 
 **"topQuery":{"field":"true"}**
-  -If field value is true, popular queries will appear in the UI.
+-If field value is true, popular queries will appear in the UI.
 
 **"topQueryFields":**
-  -If you use popular queries, you will need to provide all the required configuration here.
+-If you use popular queries, you will need to provide all the required configuration here.
 **{"apikey":"","col":"12","limit":"5"}**
-*apikey* - You will need to add index server’s api key.
-*col*- This is nothing but a collection ID to consider popular queries from. By default it will be the collection ID that we use for that particular UI cname or defaultCname value.
-*limit* - Its the limit for Number of popular queries display.
+_apikey_ - You will need to add index server’s api key.
+_col_- This is nothing but a collection ID to consider popular queries from. By default it will be the collection ID that we use for that particular UI cname or defaultCname value.
+_limit_ - Its the limit for Number of popular queries display.
 
 **"tuneTemplate": “WEB”**
-   -By default tuning template is set to WEB.tuning values of web template
+-By default tuning template is set to WEB.tuning values of web template
 We can create custom templates in admin console and providing that template name in.
 **“voiceSearch”: “false”**
-   -Voice search can be enabled in plugin by making  it to true.
+-Voice search can be enabled in plugin by making it to true.
 **"debug":false**
-   -Making this to true will display the response in JSON format in UI.
+-Making this to true will display the response in JSON format in UI.
 **"autologout":true**
-   -By making autologout to true  ,if the user is inactive on the page more than certain period of time , page will automatically logout and displays login page in UI
+-By making autologout to true ,if the user is inactive on the page more than certain period of time , page will automatically logout and displays login page in UI
 
 **"voiceSearchAPI":"https://demo.searchblox.com:8443/searchblox/rest/v2/api/speech/text"**
 **"defaultType":"OR"**
-   -To meet  search requirements efficiently, we added this feature ‘defaultType’ and value is given as OR so when multiple words are given in a search query, all words will be considered from a document and served in the search page.
+-To meet search requirements efficiently, we added this feature ‘defaultType’ and value is given as OR so when multiple words are given in a search query, all words will be considered from a document and served in the search page.
 **"pluginDomain": ""**
-   -search results can be domain specific. So whenever you assign a domain, search results will be displayed from that particular domain… If you don’t mention any value it will take search results from where the plugin has been deployed.
+-search results can be domain specific. So whenever you assign a domain, search results will be displayed from that particular domain… If you don’t mention any value it will take search results from where the plugin has been deployed.
 
 **SearchUIComponent.js:**
--Search and other Components will be rendered on page load.
--FacetFiltersComponent,SortComponent, etc is displayed once the search results come up.
--Based on the response different ui’s are shown using conditions.
+-Search and other components will be rendered on page load.
+-FacetFiltersComponent,SortComponent, SmartFAQs, etc. are displayed once search results show up.
+-Based on the response different UIs are shown using conditions.
 
 **tools:**
 -These files will be helpful for the build purpose and also to run the plugin in a local environment.
@@ -289,11 +314,12 @@ We can create custom templates in admin console and providing that template name
 #**STEPS TO RUN REACT PLUGIN LOCALLY**
 
 **Installation:**
+
 - Install node.js using the link below (probably 14 or higher):
 - https://nodejs.org/en/download/
 
 **Steps to Import node modules into project:**
-I.  Open the command prompt with plugin path (Eg:  C:\plugin)
+I. Open the command prompt with plugin path (Eg: C:\plugin)
 
 II. Use the command “npm install” to get all the dependencies into the project with folder name node_modules.
 
@@ -308,10 +334,10 @@ eg: "pluginDomain": "https://13.10.24.161:8443"
 
 - To upload a custom plugin through UI, it should be in zip file format. Rename the zip file for the plugin (whatever the custom plugin name you prefer. Eg: customui.zip).
 - Start SearchBlox service. To install and start SearchBlox refer the following link:
-https://developer.searchblox.com/docs/installing-searchblox-on-windows
+  https://developer.searchblox.com/docs/installing-searchblox-on-windows
 - Once SearchBlox is started, From Admin Console, Go to Dashboard > Collections > Search Settings Tab and click on the Upload Search Template button.
 - Choose the Custom Plugin zip file and click on the open button.
 - Once custom plugin upload is done you will see the 'Upload Plugin' section goes off from the screen. You can check that the custom plugin name folder is available in <SEARCHBLOX_INSTALLATION_PATH>/webapps/ROOT/.
 - Then, you can access the custom plugin using the following link:
-https://localhost:8443/customui/index.html
+  https://localhost:8443/customui/index.html
 - You can make the custom plugin facet.js configuration before/after the plugin upload.
