@@ -5,6 +5,9 @@
   /* border-radius: 10px; */
   border-bottom: 0.5px solid #dfdede69;
 }
+.single-result-container:first-child {
+  padding-top: 0;
+}
 
 .single-result-container svg{
   vertical-align: baseline;
@@ -13,7 +16,6 @@
   position: relative;
   /* margin-left: 2px; */
 }
-
 
 .result-title {
   /* color: #006de4; */
@@ -148,4 +150,13 @@
 		margin-right: 0;
     padding: 10px;
 	}
+}
+
+.pdf-modal canvas {
+  max-width: 100%;
+}
+
+.pdf-modal .open-in-new-tab {
+  font-size: 14px;
+  margin-left: 5px;
 }

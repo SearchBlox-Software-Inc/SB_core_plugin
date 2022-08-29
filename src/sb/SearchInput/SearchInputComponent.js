@@ -1,259 +1,272 @@
-import React, { Fragment,useState } from 'react';
-import {
-  Col,
-  Row,
-  Button,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  UncontrolledTooltip,
-  Modal, ModalHeader, ModalBody, ModalFooter,
-  Form,
-  FormGroup,
-  Input,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroup,Label
-} from "reactstrap";
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import * as $ from 'jquery';
 import * as qs from 'query-string';
+
+import { defaultType, trendingSearch, showAutoSuggest, suggestSmartFAQs, topQuery } from '../Common/Defaults';
 import * as parser from '../Common/SbCore';
-import AutoSuggestComponent from '../AutoSuggest/AutoSuggestComponent';
-import '../css/search_component.css';
-import '../../fw/css/font-awesome.min.css';
-import '../css/topbar_search.css';
-import SortComponent from '../../sb/Sort/SortComponent';
-import { facets, facetFiltersOrder,customDateSettings,voiceSearch,showAutoSuggest } from '../Common/Defaults';
-import { MDBDropdown, MDBDropdownMenu, MDBDropdownToggle, MDBDropdownItem, MDBDropdownLink } from 'mdb-react-ui-kit';
+import VoiceContext from '../../VoiceContext';
+
 import VoiceSearch from '../SearchInput/VoiceSearchInput';
-import useSpeechToText from "../Hooks";
-import { VoiceContext } from '../../App.js';
+import TrendingComponent from '../AutoSuggest/TrendingComponent';
+import AutoSuggestComponent from '../AutoSuggest/AutoSuggestComponent';
+import SuggestedSmartFAQs from './../SmartFAQs/SuggestedSmartFAQs';
+import TopQuerySuggestions from '../topQuery/TopQuerySuggestions';
 
-class SearchComponent extends React.Component{
-  constructor(){
-    super();
-    this.changeSearchInput = this.changeSearchInput.bind(this);
-    this.clearSearchInput = this.clearSearchInput.bind(this);
-    this.searchOnEnter = this.searchOnEnter.bind(this);
-    this.searchInputBlur = this.searchInputBlur.bind(this);
-    this.triggerSearch = this.triggerSearch.bind(this);
-    this.voiceSearch = this.voiceSearch.bind(this);
-    this.isRecording = this.isRecording.bind(this);
-    this.iconsearchtrigger = this.iconsearchtrigger.bind(this);
-    this.orderedFacets = [];
-    this.state = {
-      query: "",
-      focusSuggest: false,
-      showAutoSuggest: false,
-      response: false,
-      parameters: Object.assign({}, qs.parse(window.location.search)),
-      showSuggest:false,
-      isRecording:false,
-      index: -1,
-    };
-  }
+import '../css/search_component.css';
+
+// ------------------------------
+
+const SearchInputComponent = ({ response, resetSuggestSearchQueries, query: queryProp, selectedSmartFAQ, saveSelectedSmartFAQ }) => {
+   const parameters = Object.assign({}, qs.parse(window.location.search));
+   const regex = /^[a-z\d\-_&\s]+$/gi;
+
+   const [query, setQuery] = useState('');
+   const [dropdownShown, setDropdownVisibility] = useState(false);
+   const [recording, setRecording] = useState(false);
+   
+   const dropdownRef = useRef(null);
+
+   // ------------------------------
+
+   useEffect(() => {
+      const urlParameters = Object.assign({}, qs.parse(window.location.search));
+      
+      if(urlParameters.query)
+         setQuery(urlParameters.query);
+
+      document.addEventListener('mousedown', handleClickOutsideDropdown);
+
+      return () => {
+         document.removeEventListener('mousedown', handleClickOutsideDropdown);
+      };
+   }, []);
 
 
-  componentWillMount(){
-    let urlParameters = Object.assign({}, qs.parse(window.location.search));
-    if(urlParameters.query){
-      this.setState({
-        query: urlParameters.query
-      });
-      // this.triggerSearch(this.urlParameters.query);
-    }
-  }
+   useEffect(() => {
+      setQuery((queryProp)
+         .replace(/&quot;/g, '"')
+         .replace(/&amp;/g, "&")
+         .replace(/\\/g, ''));
+   }, [queryProp]);
 
-  componentWillReceiveProps(newProps){
-    this.setState({
-      query: (newProps.query).replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/\\/g, '')
-    });
-  }
+   // ------------------------------
 
-  clearSearchInput(e) {
-    e.preventDefault();
-    let urlParameters = Object.assign({}, qs.parse(window.location.search),urlParameters);
-      let locationHref = document.location.href.split("?")[0];
-      document.location.href = locationHref;
-    // this.setState({
-    //   query: ""
-    // });
-  }
+   const triggerSearch = (query, searchType = defaultType) => {
+      resetSuggestSearchQueries();
+      setQuery(query);
+      setDropdownVisibility(false);
+      
+      let params = parser.getInitialUrlParameters(query);
 
-  searchOnEnter(e){
-    if(e.keyCode === 40 || e.keyCode === 38){
+      params.page = 1;
+
+      if(params.default !== searchType)
+         params.default = searchType;
+
+      delete params.mlt_id;
+      delete params.mlt_col;
+      delete params.XPC;
+
+      if(response && response.resultInfo && response.resultInfo.hits <= 0) {
+         params = parser.clearAllFilters(params);
+      }
+
+      parser.getResults(params);
+   };
+
+   const clearSearchInput = e => {
       e.preventDefault();
-      if(!this.state.focusSuggest){
-        this.setState({
-          focusSuggest: true
-        });
+      const urlParameters = Object.assign({}, qs.parse(window.location.search),urlParameters);
+      const locationHref = document.location.href.split("?")[0];
+
+      document.location.href = locationHref;
+   };
+
+  const handleInputFocus = () => {
+    if(trendingSearch.enabled && !query.length && !dropdownShown) {
+      setDropdownVisibility(true);
+    }
+  };
+
+   const handleInputKeyDown = e => {
+      const keyCode = e.keyCode;
+
+      if(keyCode === 40 && dropdownShown) {
+         e.preventDefault();
+         document.querySelectorAll('.input-dropdown li button')[0].focus();
+      } else if(keyCode === 13) {
+         resetSelectedSmartFAQ();
+         triggerSearch(e.target.value);
       }
-    }else{
-      if(this.state.focusSuggest){
-        this.setState({
-          focusSuggest: false
-        });
+   };
+
+   const handleInputChange = e => {
+      const currentInput = e.target.value;
+
+      setQuery(currentInput);
+  
+      if(!currentInput.length || currentInput.length >= 3) {
+         if(!dropdownShown)
+            setDropdownVisibility(true);  
+      } else if(dropdownShown) {
+         setDropdownVisibility(false);
       }
-      if(e.keyCode === 13){
-        this.triggerSearch(e.target.value);
+   };
+
+   const triggerVoiceSearch = () => {
+      setQuery('');
+      setRecording(true);
+   };
+
+   const voiceSearch = data => {
+      if(data.length) {
+         const newQuery = data[data.length - 1];
+         
+         setQuery(newQuery);
+         triggerSearch(newQuery);
       }
-    }
-  }
+   };
 
-  changeSearchInput(e){
-    this.setState({
-      query: e.target.value
-    });
-    if(!this.state.showAutoSuggest){
-      this.setState({
-        showAutoSuggest: true
-      });
-    }
-  }
-
-  searchInputBlur(fromAutoSuggest){
-    if((!this.state.focusSuggest && !fromAutoSuggest) || fromAutoSuggest){
-      setTimeout(()=>{
-        this.setState({
-          showAutoSuggest: false
-        });
-      }, 200);
-    }
-  }
-
-  voiceSearch(data){
-    if(data.length!==0){
-      this.setState({
-        query: data[data.length - 1],
-      });
-      this.triggerSearch(data[data.length - 1]);
-    }
-  }
-
-  isRecording(isRecording){
-    this.setState({
-      isRecording: isRecording,
-    });
-  }
-
-
-  triggerSearch(query){
-    this.props.resetActualQuery();
-    this.setState({
-      focusSuggest: false,
-      showAutoSuggest: false,
-      query: query
-    });
-    let params = parser.getInitialUrlParameters(query);
-    params.page = 1;
-    delete params.mlt_id;
-    delete params.mlt_col;
-    delete params.XPC;
-    if(this.props.response && this.props.response.resultInfo && this.props.response.resultInfo.hits <= 0) {
-      params = parser.clearAllFilters(params);
-    }
-    parser.getResults(params);
-  }
-
-  triggerSearch_btn(query){
-    this.setState({
-      query: '',
-      isRecording: true
-    });
-  }
-  iconsearchtrigger(e){
-    if(e.keyCode === 13){
-        this.triggerSearch(this.state.query);
+   const handleClickOutsideDropdown = e => {
+      if (dropdownRef && dropdownRef.current && !dropdownRef.current.contains(e.target) && e.target.id !== 'searchInput') {
+        setDropdownVisibility(false);
       }
-  }
-  render(){
-    let { response} = this.state;
-    let regex = /^[A-Za-z0-9]+$/g;
-    let {securityResponse} = this.props;
-    let parameters = Object.assign({}, qs.parse(window.location.search));
-    let queryTemp = "";
-    if(response.resultInfo && parameters.XPC) {
-        if(response.resultInfo.query.length > 100){
-          queryTemp = response.resultInfo.query.substring(0, 100).split(" ");
-          queryTemp.splice(queryTemp.length - 1, 1);
-          response.resultInfo.query = queryTemp.join(" ") + " ...";
-        }
-    }
-    let recordPlaceHolder = "";
-    if(this.state.isRecording) {
-     recordPlaceHolder = "Listening..." ;
-    }
-     else {
-       recordPlaceHolder = "Type or use your voice to search";
-     }
-    return (
+   };
+  
+   const handleDropdownKeyDown = e => {
+      const keyCode = e.keyCode;
+      const dropdownItems = document.querySelectorAll('.input-dropdown li button');
+      const currentIndex = Array.from(dropdownItems).indexOf(e.target);
+      
+      if(keyCode === 40 || keyCode === 38) {
+        // Down and up arrow keys
+         e.preventDefault();
+         let newIndex = currentIndex;
 
-      <Fragment>
-        <div className="search-container">
-          <section id="search">
-            <label htmlFor="search-input" >
-                <a onClick={()=>this.triggerSearch(this.state.query)}  role="link" tabIndex="0" aria-label="Search icons" onKeyDown={(e)=>this.iconsearchtrigger(e)}><i className="fa fa-search opacity-1" style={{color: 'grey'}}  /></a>
-            </label>
-            <VoiceContext.Consumer>
-            {
-              value => {
-                return (
-                  <>
-                  <input id="search-input" className={(this.state.query.length>=3 && this.state.showAutoSuggest)?"form-control justify-content-between":"form-control justify-content-between "} autoComplete="off"
-                      placeholder={((value && value["voice-enabled"]) || (Object.keys(value).length === 0 && voiceSearch)) ? recordPlaceHolder:"Search"}
-                      {...this.props.inputProps}
-                      onKeyDown={(e)=>this.searchOnEnter(e)}
-                      onChange={this.changeSearchInput}
-                      onBlur={() => this.searchInputBlur(false)}
-                      onFocus={()=>(this.state.focusSuggest && this.state.autoSuggest)?this.setState({focusSuggest: false}):""}
-                      value={this.state.query}/>
-                  {
-                    (this.state.query.length > 0) &&
-                      <a href="" id="search-clear" title="Clear Search" aria-label="Clear search"onClick={(e)=>this.clearSearchInput(e)} className={`fa fa-times-circle hide ${((value && value["voice-enabled"]) || (Object.keys(value).length === 0 && voiceSearch))?"voiceEnableClear":""}`}>{}
-                    </a>
-                  }
-                  {
-                    ((value && value["voice-enabled"]) || (Object.keys(value).length === 0 && voiceSearch)) &&
-                    <div onClick={(e)=>this.triggerSearch_btn(e)} className="input-mic-container" style={{display:'flex'}}>
-                      <VoiceSearch voiceSearch={this.voiceSearch} isRecording={this.isRecording}/>
-                    </div>
-                  }
-                  </>
-                );
-              }
+         if(keyCode === 40)
+            newIndex = currentIndex + 1 >= dropdownItems.length ? 0 : currentIndex + 1;
+         else
+            newIndex = currentIndex - 1 < 0 ? dropdownItems.length - 1 : currentIndex - 1;
+         
+         dropdownItems[newIndex].focus();
+  
+      } else if(keyCode === 27) { 
+         // Escape key
+         setDropdownVisibility(false);
+      }
+   };
+
+   const resetSelectedSmartFAQ = () => {
+      if(Object.keys(selectedSmartFAQ).length) {
+         saveSelectedSmartFAQ({});
+      }
+   };
+
+   // ------------------------------
+
+   return (
+      <> 
+         <VoiceContext.Consumer>
+            {  
+               value => {
+                  const voiceSearchEnabled = ((value && value['voice-enabled']) || (Object.keys(value).length === 0 && voiceSearch));
+                  const voiceSearchEnabledPlaceholder = recording ? 'Listening...' : 'Type or use your voice to search';
+               
+                  return (
+                     <>
+                        <div className="input-wrapper">
+                           <button className="search-btn" aria-label="Search button" onClick={() => triggerSearch(query)}>
+                              <i className="fa fa-search opacity-1" />
+                           </button>
+
+                           <input id="searchInput"
+                              aria-label="Search input"
+                              autoComplete="off"
+                              className={`form-control justify-content-between ${voiceSearchEnabled ? 'voice-search-enabled' : ''}`} 
+                              placeholder={voiceSearchEnabled ? voiceSearchEnabledPlaceholder : 'Search'}
+                              value={query}
+                              onFocus={handleInputFocus}
+                              onKeyDown={handleInputKeyDown}
+                              onChange={handleInputChange}
+                           />
+
+                           <div className="input-buttons">
+                              {
+                                query.length > 0 &&
+                                  <button title="Clear Search" 
+                                      aria-label="Clear search" 
+                                      onClick={clearSearchInput} 
+                                      className="clear-search-btn fa fa-times-circle hide" 
+                                  />
+                              }
+                              {
+                                voiceSearchEnabled &&
+                                  <div onClick={triggerVoiceSearch}>
+                                      <VoiceSearch voiceSearch={voiceSearch} isRecording={setRecording}/>
+                                  </div>
+                              }
+                           </div>
+
+                           {
+                              dropdownShown &&
+                                 <div className="input-dropdown" ref={dropdownRef} onKeyDown={handleDropdownKeyDown}>
+                                    {
+                                      trendingSearch.enabled && !query.length &&
+                                        <div className="input-dropdown__item">
+                                          <TrendingComponent triggerSearch={triggerSearch} resetSelectedSmartFAQ={resetSelectedSmartFAQ} />
+                                        </div>
+                                    }
+
+                                    {
+                                      query.length >= 3 &&
+                                        <>
+                                          {
+                                            (showAutoSuggest || parameters.autoSuggestDisplay) && regex.test(query) && 
+                                                <div className="input-dropdown__item">
+                                                  <AutoSuggestComponent query={query}  
+                                                      triggerSearch={triggerSearch}
+                                                      resetSelectedSmartFAQ={resetSelectedSmartFAQ}
+                                                  />
+                                                </div>
+                                          }
+
+                                          {
+                                            suggestSmartFAQs.enabled && 
+                                              <div className="input-dropdown__item">
+                                                <SuggestedSmartFAQs query={query}
+                                                  saveSelectedSmartFAQ={saveSelectedSmartFAQ}
+                                                  triggerSearch={triggerSearch}
+                                                />
+                                              </div>
+                                          }
+
+                                          {
+                                            topQuery &&
+                                              <div className="input-dropdown__item">
+                                                <TopQuerySuggestions triggerSearch={triggerSearch} resetSelectedSmartFAQ={resetSelectedSmartFAQ} />
+                                              </div>
+                                          }
+                                        </>
+                                    }
+                                 </div>
+                           }
+                        </div>
+                     </>
+                  );
+               }
             }
+         </VoiceContext.Consumer>
+      </>
+   );
+};
 
-            </VoiceContext.Consumer>
-            {/*
-              (this.state.isRecording) ?
-                <div className="loader-1">
-                  <div className="audio_dot">{}</div>
-                  <div className="audio_dot">{}</div>
-                  <div className="audio_dot">{}</div>
-                </div>
-                :
-                null
-            */}
+export default SearchInputComponent;
 
-            {
-              (regex.test(this.state.query) && ((parameters.autoSuggestDisplay && parameters.autoSuggestDisplay === "true") || (!parameters.autoSuggestDisplay && showAutoSuggest))) &&
-              <AutoSuggestComponent q={this.state.query} searchOnEnter={this.searchOnEnter} focusSuggest={this.state.focusSuggest} showAutoSuggest={this.state.showAutoSuggest} searchInputBlur={this.searchInputBlur}/>
-            }
-          </section>
-        </div>
-      </Fragment>
-    );
-  }
-}
-
-export default SearchComponent;
-SearchComponent.contextType = VoiceContext;
-SearchComponent.propTypes = {
-  inputProps: PropTypes.object,
-  resetActualQuery:PropTypes.func,
-  response:PropTypes.object,
-  securityResponse:PropTypes.func
-  // isLoading: PropTypes.boolean
+SearchInputComponent.propTypes = {
+   query: PropTypes.string,
+   resetSuggestSearchQueries: PropTypes.func,
+   response: PropTypes.object,
+   securityResponse: PropTypes.func,
+   saveSelectedSmartFAQ: PropTypes.func,
+   selectedSmartFAQ: PropTypes.object
 };

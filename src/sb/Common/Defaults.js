@@ -1,7 +1,8 @@
 let facetsJSON = window.facets;
 let userFacets = window.inputFacets;
 let autoSuggestDisplay = facetsJSON.showAutoSuggest;
-if(Object.keys(window.autoSuggestObject).length>0){
+
+if(Object.keys(window.autoSuggestObject).length > 0) {
   if(window.autoSuggestObject.showAutoSuggest==="false"){
     autoSuggestDisplay = false;
   }
@@ -9,6 +10,7 @@ if(Object.keys(window.autoSuggestObject).length>0){
     autoSuggestDisplay = true;
   }
 }
+
 let inputPluginDomain = document.getElementById("sb_plugin_domain");
 
 export const facets = userFacets && userFacets.length > 0 ?userFacets:facetsJSON.facets;
@@ -28,8 +30,11 @@ export const urlDisplay = facetsJSON.urlDisplay;
 export const facet = facetsJSON.facet;
 export const apikey= facetsJSON.apikey;
 export const smartAutoSuggestSettings = facetsJSON.smartAutoSuggestSettings;
+export const trendingSearch = facetsJSON.trendingSearch;
 export const relatedQueryFields = facetsJSON.relatedQueryFields;
 export const relatedQuery = facetsJSON.relatedQuery;
+export const smartFAQSettings = facetsJSON.smartFAQSettings;
+export const suggestSmartFAQs = facetsJSON.suggestSmartFAQs;
 export const showAutoSuggest = autoSuggestDisplay;
 export const suggestSearch = facetsJSON.suggestSearch;
 export const autoSuggestLimit = facetsJSON.autoSuggestLimit;

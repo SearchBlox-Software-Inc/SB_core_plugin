@@ -12,7 +12,7 @@ DropdownMenu,
 DropdownItem,
 UncontrolledDropdown,
 Dropdown } from 'reactstrap';
-import { filter } from 'lodash';
+// import { filter } from 'lodash';
 import dateFormat from 'dateformat';
 
 export default class FacetFilters extends Component{
@@ -334,7 +334,7 @@ export default class FacetFilters extends Component{
                         facet[field].map((filter, index) => {
                           if(!filter.rangeField){
                             return <li key={index} className={(this.state[field] < index+1)?"facetValue hideClass":"facetValue showClass"}>
-                              <p  className={`facetChild ${filter.filterSelect ?'activeFilter':'inactiveFilter'} ${facet.facetField==="contenttype"?"contentType":"notcontentType"}`} title={filter.filterName}>
+                              <div  className={`facetChild ${filter.filterSelect ?'activeFilter':'inactiveFilter'} ${facet.facetField==="contenttype"?"contentType":"notcontentType"}`} title={filter.filterName}>
                             <p className="mb-0 d-flex">
                               {/* <label className="checkboxContainer">*/}
                                 {/*<input type="checkbox" defaultChecked={filter.filterSelect} style={{marginRight:"5px",cursor:"pointer"}}/>*/}{' '}
@@ -349,7 +349,7 @@ export default class FacetFilters extends Component{
                             <p className="mb-0 d-flex">
                               <span className={[filter.filterSelect ?'activefacet-count':'inactivefacet-count'].join(" ")}>{filter.count}</span>
                             </p>
-                            </p>
+                            </div>
                             </li>;
                           }
                         })
@@ -395,7 +395,7 @@ export default class FacetFilters extends Component{
                 }
               </DropdownToggle>
               <DropdownMenu aria-labelledby="navbarCdate" right tabIndex="0">
-                <DropdownItem toggle={false}>
+                <DropdownItem tag={"div"} toggle={false}>
                   <CustomDateFilters facets={this.props.facets?this.props.facets:[]} dropdownClose={this.dropdownClose}/>
                 </DropdownItem>
               </DropdownMenu>

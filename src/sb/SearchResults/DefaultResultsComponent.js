@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
-import { Link } from "react-router-dom";
+
 import PropTypes from 'prop-types';
 import DbOverlayComponent from '../low_level_components/db_overlay_component';
 import EmailOverlayComponent from '../low_level_components/email_overlay_component';
-import FileViewerComponent from '../low_level_components/FileViewer';
 import * as defaults from '../Common/Defaults';
 import * as qs from 'query-string';
 import "../css/result_component.css";
 import * as $ from 'jquery';
 import * as moment from 'moment';
 import * as parser from '../Common/SbCore';
+import PDFViewer from '../low_level_components/PDFViewer';
 let notFound = require("../../images/notFound1.png");
+
+
+
 
 // COMPONENT WHICH HAS ALL RESULTS IN RESPONSE AND USES <Result /> COMPONENT TO DISPLAY EACH RESULT
 export default class DefaultResultsComponent extends Component{
@@ -20,7 +23,7 @@ export default class DefaultResultsComponent extends Component{
     this.state = {
       showOverlay: false,
       showEmailOverlay: false,
-      showPDFOverlay: false,
+      PDFOverlayShown: false,
       result: {},
       emailViewObj:{},
       activeElement: ""
@@ -103,11 +106,11 @@ export default class DefaultResultsComponent extends Component{
     {
       this.setState({
         result: Object.assign({}, result),
-        showPDFOverlay: true
+        PDFOverlayShown: true
       });
     }else{
       this.setState({
-        showPDFOverlay: false
+        PDFOverlayShown: false
       });
     }
   }
@@ -132,7 +135,7 @@ export default class DefaultResultsComponent extends Component{
 
   hidePDFOverlay(){
     this.setState({
-      showPDFOverlay: !this.state.showPDFOverlay
+      PDFOverlayShown: !this.state.PDFOverlayShown
     });
     this.state.activeElement.focus();
   }
@@ -143,9 +146,11 @@ export default class DefaultResultsComponent extends Component{
 
 
   render(){
-    let { results, resultInfo} = this.props;
+    const { results, resultInfo} = this.props;
+    const { PDFOverlayShown } = this.state;
+
     return (
-      <div>
+      <>
         {
           results.map((result)=>{
             return <Result key={result['no']} result={result} highlight={resultInfo.highlight} getDbResults={this.getDbResults} getEmailViewerFunc={this.getEmailViewerFunc} getPDFResults={this.getPDFResults} documentClick={this.documentClick} morelikethisClick={this.morelikethisClick}/>;
@@ -158,9 +163,12 @@ export default class DefaultResultsComponent extends Component{
           (this.state.showEmailOverlay)?<EmailOverlayComponent result={this.state.emailViewObj} showEmailOverlay={this.state.showEmailOverlay} hideEmailOverlay={this.hideEmailOverlay}/>:""
         }
         {
-          (this.state.showPDFOverlay)?<FileViewerComponent result={this.state.result} showPDFOverlay={this.state.showPDFOverlay} hidePDFOverlay={this.hidePDFOverlay}/>:""
+          PDFOverlayShown ? 
+            <PDFViewer result={this.state.result} PDFOverlayShown={PDFOverlayShown} hidePDFOverlay={this.hidePDFOverlay} /> 
+            : 
+            null
         }
-      </div>
+      </>
     );
   }
 }

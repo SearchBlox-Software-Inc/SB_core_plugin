@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import * as qs from 'query-string';
 import * as parser from '../Common/SbCore';
 import * as moment from 'moment';
-import * as $ from 'jquery';
+// import * as $ from 'jquery';
 import { facets, facetFiltersOrder } from '../Common/Defaults';
 import '../css/facet_filters_component.css';
-import {Collapse, Button } from 'reactstrap';
-import dateFormat from 'dateformat';
+// import {Collapse, Button } from 'reactstrap';
+// import dateFormat from 'dateformat';
 
 export default class SelectedFilters extends Component{
     constructor(){

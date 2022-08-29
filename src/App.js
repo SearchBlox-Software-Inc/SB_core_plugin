@@ -7,8 +7,10 @@ import { history } from './sb/low_level_components/custom_history';
 import './App.css';
 import SearchUIComponent from './SearchUIComponent.js';
 import SearchComponent from './sb/SearchInput/SearchInputComponent';
+import VoiceContext from './VoiceContext';
+
 window.smartSuggest = {};
-export const VoiceContext = React.createContext({});
+
 
 class App extends Component {
   constructor() {

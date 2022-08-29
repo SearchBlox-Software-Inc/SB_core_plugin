@@ -13,7 +13,7 @@ export default class SuggestAutoSearch extends React.Component{
   }
   suggestCLick(e) {
     e.preventDefault();
-    this.props.resetActualQuery();
+    this.props.resetSuggestSearchQueries();
     this.urlParameters.query = this.props.resultquery;
     let params = parser.getInitialUrlParameters(this.urlParameters.query);
     params.page = 1;
@@ -33,6 +33,6 @@ export default class SuggestAutoSearch extends React.Component{
 
 SuggestAutoSearch.propTypes = {
   resultquery: PropTypes.string,
-  resetActualQuery: PropTypes.func,
+  resetSuggestSearchQueries: PropTypes.func,
   actualquery: PropTypes.string
 };

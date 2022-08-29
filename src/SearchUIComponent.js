@@ -1,38 +1,30 @@
-import React, { Component, Fragment } from 'react';
-import SearchComponent from './sb/SearchInput/SearchInputComponent';
-import Copyright from './sb/SearchInput/Copyright';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import * as qs from 'query-string';
+import * as moment from 'moment';
+import * as $ from 'jquery';
+import JSONPretty from 'react-json-pretty';
+import dateFormat from 'dateformat';
+
+import 'bootstrap/dist/js/bootstrap.js';
+
+import * as defaults from './sb/Common/Defaults';
+import * as parser from './sb/Common/SbCore';
+import { history } from './sb/low_level_components/custom_history';
+
+import SearchInputComponent from './sb/SearchInput/SearchInputComponent';
 import FacetFiltersComponent from './sb/FacetFilters/FacetFiltersComponent';
+import SmartFAQsComponent from './sb/SmartFAQs/SmartFAQsComponent';
 import SelectedFilters from './sb/FacetFilters/SelectedFilters';
+import SuggestAutoSearch from './sb/low_level_components/suggest_auto_search';
 import SortComponent from './sb/Sort/SortComponent';
 import RelatedQueryComponent from './sb/RelatedQuery/relatedquery.js';
 import TopQueryComponent from './sb/topQuery/topquery.js';
-import FeaturedResultsComponent from './sb/FeaturedResults/FeaturedResultsComponent';
-import PaginationWithPageNumbers from './sb/Pagination/PaginationWithNumbers';
-import * as defaults from './sb/Common/Defaults';
-import * as parser from './sb/Common/SbCore';
-import PropTypes from 'prop-types';
-import './sb/css/search_component.css';
-import * as $ from 'jquery';
-import 'bootstrap/dist/js/bootstrap.js';
-import SuggestAutoSearch from './sb/low_level_components/suggest_auto_search';
-import * as qs from 'query-string';
-import './App.css';
-
 import NormalViewComponent from './sb/normal_view_component';
-import { history } from './sb/low_level_components/custom_history';
-import * as moment from 'moment';
-import JSONPretty from 'react-json-pretty';
-import dateFormat from 'dateformat';
-import {
-  Alert,
-  Row,
-  Col,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  Dropdown
-} from "reactstrap";
+import FeaturedResultsComponent from './sb/FeaturedResults/FeaturedResultsComponent';//---
+import PaginationWithPageNumbers from './sb/Pagination/PaginationWithNumbers';
+
+import './App.css';
 
 const uparrow = require("./images/up-arrow.png");
 
@@ -44,7 +36,11 @@ class SearchUIComponent extends Component {
       response: {},
       allFacetsResponse:[],
       isLoading: false,
-      actualQuery:"",
+      suggestSearch: {
+        actualQuery: '',
+        suggestedQuery: ''
+      },
+      selectedSmartFAQ: {},
       debugResponse:{},
       facetsResponse:[],
       noPublicCol:false,
@@ -57,7 +53,7 @@ class SearchUIComponent extends Component {
 
     this.child=React.createRef();
     this.doSearch = this.doSearch.bind(this);
-    this.resetActualQuery = this.resetActualQuery.bind(this);
+    this.resetSuggestSearchQueries = this.resetSuggestSearchQueries.bind(this);
     this.logoutUser = this.logoutUser.bind(this);
     this.dropdownToggle = this.dropdownToggle.bind(this);
     this.dropdownClose = this.dropdownClose.bind(this);
@@ -67,12 +63,18 @@ class SearchUIComponent extends Component {
     this.skipnavigation = this.skipnavigation.bind(this);
     this.skipFocus = this.skipFocus.bind(this);
     this.skipBlur = this.skipBlur.bind(this);
+    this.saveSelectedSmartFAQ = this.saveSelectedSmartFAQ.bind(this);
   }
 
 
   componentWillMount(){
     if(window.location.search !== ""){
+      // this.doSearch();
       this.doSearch(this.state.parameters);
+        // this.doSearch({
+        //   ...this.state.parameters,
+        //   facetonly:true,
+        // });
     }
   }
 
@@ -88,7 +90,7 @@ class SearchUIComponent extends Component {
     if((this.urlParams.debug || defaults.debug) && Object.keys(this.state.debugResponse).length > 0) {
       document.getElementById("root").classList.add("debugMode");
     }
-    window.addEventListener('resize', this.updateSize);
+    // window.addEventListener('resize', this.updateSize);
     document.body.addEventListener('click', this.myHandler);
     if(defaults.autologout){
       setInterval(function(){
@@ -124,6 +126,10 @@ class SearchUIComponent extends Component {
           parameters: Object.assign({}, qs.parse(route.search))
         }, () => {
           this.doSearch(this.state.parameters);
+            // this.doSearch({
+            //   ...this.state.parameters,
+            //   facetonly:true
+            // });
         });
       }
       else{
@@ -136,11 +142,14 @@ class SearchUIComponent extends Component {
     if((this.urlParams.debug || defaults.debug) && Object.keys(this.state.debugResponse).length > 0) {
       document.getElementById("root").classList.add("debugMode");
     }
-    this.updateSize();
+    // this.updateSize();
+    window.onpopstate = e => {
+      this.saveSelectedSmartFAQ({});
+    };
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.updateSize);
+    // window.removeEventListener('resize', this.updateSize);
     document.body.removeEventListener('click', this.myHandler);
   }
 
@@ -175,17 +184,17 @@ class SearchUIComponent extends Component {
     }
   }
 
-  updateSize(event){
-    let noResults = document.getElementById("noResultsContainer");
-    if(noResults !== null && window.innerWidth > 767) {
-      let leftSpacing = document.getElementById("logoDiv").clientWidth;
-      document.getElementById("noResultsContainer").style.marginLeft = leftSpacing;
+  // updateSize(event){
+    // let noResults = document.getElementById("noResultsContainer");
+    // if(noResults !== null && window.innerWidth > 767) {
+      // let leftSpacing = document.getElementById("logoDiv").clientWidth;
+      // document.getElementById("noResultsContainer").style.marginLeft = leftSpacing;
       // if(this.state.response.error) {
       // }else {
       //   document.getElementById("noResultsContainer").style.marginLeft = leftSpacing + 50;
       // }
-    }
-  }
+    // }
+  // }
 
   dropdownToggle(){
     this.setState({
@@ -199,7 +208,6 @@ class SearchUIComponent extends Component {
     });
   }
 
-
   doSearch(params){
     this.props.isLoadingFunc();
     this.setState({
@@ -207,7 +215,8 @@ class SearchUIComponent extends Component {
     });
     let questionRegex = /[?]+$/g;
     let parameters = Object.assign({}, qs.parse(window.location.search));
-    parser.getSBResponse(params).then((response)=>{
+    parser.getSBResponse(params)
+      .then((response)=>{
       if(!params.facetonly && response != undefined){
         this.setState({
           isLoading:false
@@ -242,16 +251,19 @@ class SearchUIComponent extends Component {
           });
           this.doSearch();
         }
-        else if(parseInt(response.data['hits'], 10) === 0 && response.data['suggest'] && response.data['suggest'] !== "" && defaults.suggestSearch && this.state.actualQuery === "") {
+        else if(parseInt(response.data.hits, 10) === 0 && response.data.suggest && response.data.suggest !== "" && defaults.suggestSearch && this.state.suggestSearch.actualQuery === "") {
           this.setState({
-              actualQuery: response.data['query']
+              suggestSearch: {
+                actualQuery: response.data.query,
+                suggestedQuery: response.data.suggest
+              }
             });
           // this.state.parameters.query = response.data['suggest'];
           // this.doSearch();
           this.setState({
             parameters : {
               ...this.state.parameters,
-              query : response.data['suggest']
+              query : response.data.suggest
             }
           });
           parser.getResults(this.state.parameters);
@@ -289,7 +301,8 @@ class SearchUIComponent extends Component {
             document.title = `Search Results: ${unescape(this.state.parameters.query).replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/\\/g, '')}`;
           }
         }
-      }).catch((error)=>{
+      })
+      .catch((error)=>{
         this.setState({
           isLoading: false,
           response: {
@@ -300,44 +313,52 @@ class SearchUIComponent extends Component {
       });
   }
 
-    resetActualQuery(){
-     this.setState({
-       actualQuery:""
-     });
-   }
+  resetSuggestSearchQueries(){
+    this.setState({
+      suggestSearch: {
+        actualQuery: '',
+        suggestedQuery: ''
+      }
+    });
+  }
 
-   logoutUser(e) {
-     e.preventDefault();
-     localStorage.removeItem("inactiveTime");
-     localStorage.removeItem("securityMethod");
-     localStorage.removeItem("searchToken");
-     localStorage.removeItem("loginTime");
-     localStorage.removeItem("loginUserName");
-     window.location = window.location.href.split("?")[0];
-   }
+  logoutUser(e) {
+    e.preventDefault();
+    localStorage.removeItem("inactiveTime");
+    localStorage.removeItem("securityMethod");
+    localStorage.removeItem("searchToken");
+    localStorage.removeItem("loginTime");
+    localStorage.removeItem("loginUserName");
+    window.location = window.location.href.split("?")[0];
+  }
 
-
-   handleCallback = (childData,childDataTwo) =>{
+  handleCallback = (childData,childDataTwo) =>{
     this.setState({name: childData,nameTwo:childDataTwo});
-   }
-   skipnavigation(e){
-     document.getElementById("search-input").focus();
-   }
+  }
+  
+  skipnavigation(e){
+    document.getElementById("searchInput").focus();
+  }
 
-   skipFocus(e){
-     $("#result-facet-container").css("margin-top","110px");
-   }
-   skipBlur(e){
-     $("#result-facet-container").css("margin-top","85px");
-   }
+  skipFocus(e){
+    $("#result-facet-container").css("margin-top","110px");
+  }
 
-  render(){
+  skipBlur(e){
+    $("#result-facet-container").css("margin-top","85px");
+  }
 
-    let { response,allFacetsResponse,facetsResponse} = this.state;
+  saveSelectedSmartFAQ(faqObj) {
+    this.setState({ selectedSmartFAQ: { ...faqObj } });
+  }
+
+  render() {
+    let { response, selectedSmartFAQ, noPublicCol} = this.state;
     let {securityResponse} = this.props;
     let parameters = Object.assign({}, qs.parse(window.location.search));
     let queryTemp = "";
     let date = "";
+
     for(let i in defaults.facets){
       if(defaults.facets[i].dateRange !== undefined){
         date = defaults.facets[i].field;
@@ -350,32 +371,52 @@ class SearchUIComponent extends Component {
     let dataStringTwo = String(datefilterTwo);
     let dateconvert = dataString.substr(1,19);
     let dateconvertTwo = dataStringTwo.substr(22,19);
+    
     if(parameters['f.'+date+'.filter'] && !parameters['f.'+date+'.filter'].includes("*"))
     parameters['f.'+date+'.filter']=dateFormat(dateconvert,"dd mmmm yyyy") + " - " +dateFormat(dateconvertTwo,"dd mmmm yyyy") ;
 
     if(response.resultInfo) {
-        if(response.resultInfo.query.length > 100){
-          queryTemp = response.resultInfo.query.substring(0, 100).split(/[ ,+_-]+/);
-          queryTemp.splice(queryTemp.length - 1, 1);
-          response.resultInfo.query = queryTemp.join(" ") + " ...";
-        }
+      if(response.resultInfo.query.length > 100){
+        queryTemp = response.resultInfo.query.substring(0, 100).split(/[ ,+_-]+/);
+        queryTemp.splice(queryTemp.length - 1, 1);
+        response.resultInfo.query = queryTemp.join(" ") + " ...";
+      }
     }
-    return(
-      <Fragment>
+
+    const noResults = response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0 || Math.ceil(parseInt(response.resultInfo.hits, 10)/parameters.pagesize) < parseInt(parameters.page, 10);
+    // let todayTime = parameters['f.'+date+'.filter'];
+    // let month = Intl.DateTimeFormat({year:"numeric"}).format(todayTime)
+
+    return (
+      <>
         <div className="searchGrid">
-          <Row className="m-0 login-firstbar" id="loginDiv">
-                <div id="skip" role="navigation">
-                  <a href="javascript:void(0)" onClick={(e)=>this.skipnavigation(e)} onFocus={()=>this.skipFocus()} onBlur={()=>this.skipBlur()}>
-                  Skip to main content</a>
-                </div>
-            <Col sm="12" className="px-4">
-              <Row className={`height-50 ${response.results && response.resultInfo && response.resultInfo.hits >= 0 ?"spacingcss":""}`}>
+          <div className="row m-0 login-firstbar" id="loginDiv">
+
+            <div id="skip" role="navigation">
+              <button onClick={(e)=>this.skipnavigation(e)} onFocus={()=>this.skipFocus()} onBlur={()=>this.skipBlur()}>
+                Skip to main content
+              </button>
+            </div>
+
+            <div className="col-sm-12 px-4">
+              <div className={`row height-50 ${response.results && response.resultInfo && response.resultInfo.hits >= 0 ?"spacingcss":""}`}>
+                
                 <div role="banner" className="topbar_logo col-lg-2 col-sm-3" id="logoDiv">
-                  <a href="https://www.searchblox.com" title="SearchBlox Home" target="_blank"><img width="162px" height="34px" style={{margin:"8px 0"}} alt="SearchBlox Home" src={require('./images/sb-logomain-rgb-1@2x.png')}/></a>
+                  <a href="https://www.searchblox.com" title="SearchBlox Home" target="_blank">
+                    <img width="162px" height="34px" style={{margin:"8px 0"}} alt="SearchBlox Home" src={require('./images/sb-logomain-rgb-1@2x.png')}/>
+                  </a>
                 </div>
+
                 <div role="search" className={`topbar_search col-lg-8 col-sm-6 ${!parameters.query && !this.state.isLoading?"searchNoParams":""}`}>
-                  <SearchComponent response={this.state.response} isLoading={this.state.isLoading} resetActualQuery={this.resetActualQuery} query={((parameters.query !== undefined)?parameters.query:"")}/>
+                  <SearchInputComponent
+                    response={this.state.response} 
+                    resetSuggestSearchQueries={this.resetSuggestSearchQueries} 
+                    query={((parameters.query !== undefined)?parameters.query:"")}
+                    selectedSmartFAQ={selectedSmartFAQ}
+                    saveSelectedSmartFAQ={this.saveSelectedSmartFAQ}
+                  />
                 </div>
+
                 <div className="topbar_icons col-lg-2 col-sm-3" role="complementary">
                   {
                     (response.results && response.resultInfo && response.resultInfo.hits >= 0) &&
@@ -387,7 +428,7 @@ class SearchUIComponent extends Component {
                             <i id="caret"/>
                           </button>
                           <div id="myDropdown" className="dropdown-content">
-                          <SortComponent sort={(response.resultInfo.sort1!==undefined)?response.resultInfo.sort1:response.resultInfo.sort} sortdir={(response.resultInfo.sortDirection1!==undefined)?response.resultInfo.sortDirection1:response.resultInfo.sortDirection}/>
+                            <SortComponent sort={(response.resultInfo.sort1!==undefined)?response.resultInfo.sort1:response.resultInfo.sort} sortdir={(response.resultInfo.sortDirection1!==undefined)?response.resultInfo.sortDirection1:response.resultInfo.sortDirection}/>
                           </div>
                         </li>
                       </ul>
@@ -398,9 +439,11 @@ class SearchUIComponent extends Component {
                       <div className="dropdown log-in header__top-item" id="logIn">
                         <a href="" className="dropdown-toggle nav-link" onFocus={this.dropdownBlur}
                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="admin-dropdown"
-                          id="navbarDropdownMenuLink">
+                          id="navbarDropdownMenuLink"
+                        >
                           <i className="fas fa-user" />
                         </a>
+
                         <div aria-labelledby="navbarDropdownMenuLink" className="dropdown-menu navbarDropdownMenuLink">
                           <div className="dropdown-item">
                             <p className="dd-heading">Account</p>
@@ -410,176 +453,204 @@ class SearchUIComponent extends Component {
                             <a href="" className="dd-heading-logout">Log Out</a>
                           </div>
                         </div>
+
                       </div>
                     </div>
                   }
+
                 </div>
-              </Row>
-            </Col>
-          </Row>
-          <div id="result-facet-container" role="main">
-          {
-          (this.state.isLoading)
-          ?
-          <div className="search-spinner">
-          <div style={{textAlign:'center',margin:"15px 0 20px"}}>
-            <div className="fa fa-3x">
-               <i className="fa fa-spinner fa-spin"/>
-            </div>
-          </div>
-          </div>
-          :
-          <Fragment>
-          {
-          (defaults.facetsFiltersDisplay) &&
-          <div className={(response.facets === undefined || response.facets.length <= 0 || response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0)?'noFacets':'hasFacets'}>
-          <div id="facets-container">
-            <FacetFiltersComponent parentCallback = {this.handleCallback} ref={this.child} allFacetsResponse={response.facets} facets={response.facets?response.facets:[]}/>
-          </div>
-          </div>
-          }
-          <div  id="results-container-main" className={(!defaults.facetsFiltersDisplay || response.facets === undefined || response.facets.length <= 0 || response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0)?'resultNoFaacets':'resultWithFacet'}>
-          {
-          (response.results) && (
-          (response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0 || Math.ceil(parseInt(response.resultInfo.hits, 10)/parameters.pagesize) < parseInt(parameters.page, 10))
-          ?
-          ""
-          :
-          <Fragment>
-            <SelectedFilters facets={response.facets?response.facets:[]}/>
-            {
-              (this.state.actualQuery!=="" && !parameters.XPC && defaults.suggestSearch) &&
-              <SuggestAutoSearch resetActualQuery={this.resetActualQuery} resultquery={response.resultInfo.query.replace(/\\/g, '')} actualquery={this.state.actualQuery.replace(/\\/g, '')}/>
-            }
-            <div className="display-count-data">
-              <div className={['resultsText padding-0',(parameters.XPC?"resultsForMore":"")].join(" ")}>
-               Results <b>{response.resultInfo.start}</b> - <b>{response.resultInfo.end}</b> of <b>{response.resultInfo.hits}</b>
-               {
-               (response.resultInfo.query) && <span> for <b dangerouslySetInnerHTML={{__html: (response.resultInfo.query.replace(/\\/g, ''))}}>{}</b>.</span>
-               }
-               {
-               (response.resultInfo.query && !parameters.mlt_id) && <span> Search took <b>{(parseInt(response.resultInfo.time, 10)/1000).toFixed(3)} </b> Seconds.</span>
-               }
+
               </div>
             </div>
+          </div>
 
+          <div id="result-facet-container" role="main">
             {
-            ((parameters.adsDisplay && parameters.adsDisplay === "true" && parameters.page === "1" && parameters.query !== "*") || (!parameters.adsDisplay && defaults.adsDisplay && parameters.query !== "*")) &&
-            <FeaturedResultsComponent featuredResults={response.featuredResults}/>
+              this.state.isLoading ?
+                <div className="search-spinner text-center py-5">
+                  <i className="fa fa-3x fa-spinner fa-spin"/>
+                </div>
+                :
+                <>
+                  {
+                    (defaults.facetsFiltersDisplay) &&
+                    <div className={(response.facets === undefined || response.facets.length <= 0 || response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0)?'noFacets':'hasFacets'}>
+                      <div id="facets-container">
+                        <FacetFiltersComponent parentCallback = {this.handleCallback} ref={this.child} allFacetsResponse={response.facets} facets={response.facets?response.facets:[]}/>
+                      </div>
+                    </div>
+                  }
+
+                  <div  id="results-container-main" className={(!defaults.facetsFiltersDisplay || response.facets === undefined || response.facets.length <= 0 || response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0)?'resultNoFaacets':'resultWithFacet'}>
+                    {
+                      (defaults.suggestSmartFAQs.enabled || defaults.smartFAQSettings.enabled) && response.results &&
+                        <SmartFAQsComponent query={((parameters.query !== undefined) ? parameters.query: "")}
+                          selectedSmartFAQ={selectedSmartFAQ}
+                          noResults={noResults || noPublicCol || response.error} 
+                        />
+                    }
+
+                    {
+                      response.results && (
+                        noResults ?
+                          null
+                          :
+                          <>
+                            <SelectedFilters facets={response.facets?response.facets:[]}/>
+
+                            {
+                              (defaults.suggestSearch && !parameters.XPC && this.state.suggestSearch.actualQuery !== "" && response.resultInfo.query === this.state.suggestSearch.suggestedQuery) &&
+                                <SuggestAutoSearch resetSuggestSearchQueries={this.resetSuggestSearchQueries} 
+                                  resultquery={response.resultInfo.query.replace(/\\/g, '')} 
+                                  actualquery={this.state.suggestSearch.actualQuery.replace(/\\/g, '')}
+                                />
+                            }
+
+                            <div className="display-count-data">
+                              <div className={['resultsText padding-0',(parameters.XPC?"resultsForMore":"")].join(" ")}>
+                                Results <b>{response.resultInfo.start}</b> - <b>{response.resultInfo.end}</b> of <b>{response.resultInfo.hits}</b>
+                                {
+                                  (response.resultInfo.query) && <span> for <b dangerouslySetInnerHTML={{__html: (response.resultInfo.query.replace(/\\/g, ''))}}>{}</b>.</span>
+                                }
+                                {
+                                  (response.resultInfo.query && !parameters.mlt_id) && <span> Search took <b>{(parseInt(response.resultInfo.time, 10)/1000).toFixed(3)} </b> Seconds.</span>
+                                }
+                              </div>
+                            </div>
+
+                            {
+                              ((parameters.adsDisplay && parameters.adsDisplay === "true" && parameters.page === "1" && parameters.query !== "*") || (!parameters.adsDisplay && defaults.adsDisplay && parameters.query !== "*")) &&
+                                <FeaturedResultsComponent featuredResults={response.featuredResults}/>
+                            }
+
+                            {
+                              ((parameters.relatedQuery && parameters.relatedQuery === 'true' && parameters.page === "1") || (defaults.relatedQuery && parameters.page === "1")) &&
+                                <RelatedQueryComponent results={parameters['query']} />
+                            }
+
+                            {/*
+                              ((parameters.topQuery && parameters.topQuery === 'true' && parameters.page === "1") || (defaults.topQuery && parameters.page === "1")) &&
+                                <TopQueryComponent/>
+                            */}
+
+                          </>
+                      )
+                    }
+
+                    {
+                      noPublicCol &&
+                        <div className="no-results-div" id="noResultsContainer">
+                          <p>There is no public collection available to search.</p>
+                          <p><b>Suggestions:</b></p>
+                          <ul className="suggestions-list">
+                            <li>Make sure you have at least one public collection.</li>
+                            <li>Enable security to search on private collections.</li>
+                          </ul>
+                        </div>
+                    }
+                    {
+                      response.error &&
+                        <div className="no-results-div" id="noResultsContainer">
+                          <p>Your search - <b>{parameters['query']}</b> - did not match any documents.</p>
+                          {
+                            ((parameters.topQuery && parameters.topQuery === 'true' && parameters.page === "1") || (defaults.topQuery && parameters.page === "1")) &&
+                              <TopQueryComponent/>
+                          }
+                          <p><b>Suggestions:</b></p>
+                          <ul className="suggestions-list">
+                            <li>Make sure all words are spelled correctly.</li>
+                            <li>Make sure you have access to private collections.</li>
+                            <li>Use similar words or synonyms.</li>
+                            <li>Try more general keywords.</li>
+                          </ul>
+                        </div>
+                    }
+                    {
+                      response.results && (
+                        noResults ?
+                          <div className="no-results-div" id="noResultsContainer">
+                              <p>Your search for - <b dangerouslySetInnerHTML={{__html: (response.resultInfo.query.replace(/\\/g, ''))}}>{}</b> - did not match any documents.</p>
+                              {
+                              ((parameters.topQuery && parameters.topQuery === 'true' && parameters.page === "1") || (defaults.topQuery && parameters.page === "1")) &&
+                              <TopQueryComponent/>
+                              }
+                              <p><b>Suggestions:</b></p>
+                              <ul className="suggestions-list">
+                                <li>Make sure all words are spelled correctly.</li>
+                                <li>Make sure you have access to private collections.</li>
+                                <li>Use similar words or synonyms.</li>
+                                <li>Try more general keywords.</li>
+                              </ul>
+                          </div>
+                          :
+                          <NormalViewComponent facets={response.facets} 
+                            resultInfo={response.resultInfo} 
+                            results={response.results} 
+                            featuredResults={response.featuredResults}
+                          />
+                      )
+                    }
+                  </div>
+                </>
             }
-            {
-            ((parameters.relatedQuery && parameters.relatedQuery === 'true' && parameters.page === "1") || (defaults.relatedQuery && parameters.page === "1")) &&
-            <RelatedQueryComponent results={parameters['query']} />
-            }
-          </Fragment>
-          )
-          }
-          {
-            (this.state.noPublicCol) &&
-            <div className="noResultsDiv" id="noResultsContainer" style={{padding: "0 1em 1em"}}>
-              <p>There is no public collection available to search.</p>
-              <p><b>Suggestions:</b></p>
-              <ul>
-                <li>Make sure you have at least one public collection.</li>
-                <li>Enable security to search on private collections.</li>
-              </ul>
-            </div>
-          }
-          {
-          (this.state.response.error) &&
-          <div className="noResultsDiv" id="noResultsContainer" style={{padding: "0 1em 1em"}}>
-          <p>Your search - <b>{parameters['query']}</b> - did not match any documents.</p>
-          {
-            ((parameters.topQuery && parameters.topQuery === 'true' && parameters.page === "1") || (defaults.topQuery && parameters.page === "1")) &&
-            <TopQueryComponent/>
-          }
-          <p><b>Suggestions:</b></p>
-          <ul>
-            <li>Make sure all words are spelled correctly.</li>
-            <li>Make sure you have access to private collections.</li>
-            <li>Use similar words or synonyms.</li>
-            <li>Try more general keywords.</li>
-          </ul>
+
+            <a className="back-to-top"  href="" title="Back to Top" onClick={(e) => this.topScroll(e)} tabIndex="0">
+              <img src={uparrow} alt="back-to-top"/>
+              <span className="sr-only">Back to <em>T</em>op</span>
+            </a>
+
           </div>
-          }
+          
           {
-          (response.results) && (
-          (response.results === undefined || parseInt(response.resultInfo.hits, 10) === 0 || Math.ceil(parseInt(response.resultInfo.hits, 10)/parameters.pagesize) < parseInt(parameters.page, 10))
-          ?
-          <Fragment>
-            <div className="noResultsDiv" id="noResultsContainer" style={{padding: "0 1em 1em"}}>
-                <p>Your search for - <b dangerouslySetInnerHTML={{__html: (response.resultInfo.query.replace(/\\/g, ''))}}>{}</b> - did not match any documents.</p>
+            (!this.state.isLoading && response.results && response.resultInfo && response.resultInfo.hits && parseInt(response.resultInfo.hits, 10) > 0) ?
+              <>
                 {
-                ((parameters.topQuery && parameters.topQuery === 'true' && parameters.page === "1") || (defaults.topQuery && parameters.page === "1")) &&
-                <TopQueryComponent/>
+                  response.resultInfo.lastPage ?
+                    <PaginationWithPageNumbers
+                      currentpage={parseInt(response.resultInfo.currentPage, 10)}
+                      lastpage={parseInt(response.resultInfo.lastPage, 10)} 
+                    />
+                    :
+                    <PaginationWithPageNumbers
+                      currentpage={parseInt(response.resultInfo.currentPage, 10)}
+                      lastpage={Math.ceil(parseInt(response.resultInfo.hits, 10)/10)} 
+                    />
                 }
-                <p><b>Suggestions:</b></p>
-                <ul>
-                  <li>Make sure all words are spelled correctly.</li>
-                  <li>Make sure you have access to private collections.</li>
-                  <li>Use similar words or synonyms.</li>
-                  <li>Try more general keywords.</li>
-                </ul>
-            </div>
-            </Fragment>
-          :
-          <Fragment>
-            <NormalViewComponent facets={response.facets} resultInfo={response.resultInfo} results={response.results} featuredResults={response.featuredResults}/>
-          </Fragment>
-          )
-          }
-          </div>
-          </Fragment>
-          }
-          <a className="back-to-top"  href="" title="Back to Top" onClick={(e) => this.topScroll(e)} tabIndex="0">
-             <img src={uparrow} alt="back-to-top"/>
-             {/*<i className="fa-solid fa-chevron-up"/>*/}
-             <span className="sr-only">Back to <em>T</em>op</span>
-          </a>
-          </div>
-          {
-          (!this.state.isLoading && response.results && response.resultInfo && response.resultInfo.hits && parseInt(response.resultInfo.hits, 10) > 0)
-          ?
-          <Fragment>
-            {
-              (response.resultInfo.lastPage)
-              ?
-              <PaginationWithPageNumbers
-                  currentpage={parseInt(response.resultInfo.currentPage, 10)}
-                  lastpage={parseInt(response.resultInfo.lastPage, 10)} />
+              </>
               :
-              <PaginationWithPageNumbers
-                  currentpage={parseInt(response.resultInfo.currentPage, 10)}
-                  lastpage={Math.ceil(parseInt(response.resultInfo.hits, 10)/10)} />
-            }
-          </Fragment>
-          :
-          ""
+              null
           }
+
           <div role="contentinfo" className="footer text-center">
             <p className="poweredBy">
               <span>Powered By&nbsp;</span>
             </p>
-            <p> <a href="https://www.searchblox.com" title="SearchBlox Software" target="_blank">
-              <img width="162px" height="34px" alt="SearchBlox Software" src={require('./images/sb-logomain-rgb-1@2x.png')}/></a>
+            <p> 
+              <a href="https://www.searchblox.com" title="SearchBlox Software" target="_blank">
+                <img width="162px" height="34px" alt="SearchBlox Software" src={require('./images/sb-logomain-rgb-1@2x.png')}/>
+              </a>
             </p>
             <p className="font-class-4 font-size-12 copyright">&copy; {new Date().getFullYear()}. All Rights Reserved. SearchBlox Software, Inc.</p>
           </div>
+
         </div>
+
         {
           ((parameters.debug || defaults.debug) && Object.keys(this.state.debugResponse).length > 0) &&
-          <div className="debugResponse">
-            <JSONPretty id="json-pretty" data={this.state.debugResponse}/>
-          </div>
+            <div className="debugResponse">
+              <JSONPretty id="json-pretty" data={this.state.debugResponse}/>
+            </div>
         }
 
-      </Fragment>
+      </>
     );
   }
 }
 
 export default SearchUIComponent;
+
+
 SearchUIComponent.propTypes = {
+  isLoadingFunc: PropTypes.func,
   securityResponse: PropTypes.object,
-  isLoadingFunc:PropTypes.func
 };

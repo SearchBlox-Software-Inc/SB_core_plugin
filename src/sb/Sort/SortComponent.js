@@ -63,8 +63,8 @@ export default class SortComponent extends Component{
     return(
 
 
-          sortButtons.map(sortbutton => {
-            return <a href="" key={sortbutton.field} title={sortbutton.display} className="dd-heading"  onClick={(e) => this.doSort(sortbutton.field, sortbutton.display, this.props.sortdir,e)}>
+          sortButtons.map((sortbutton, index) => {
+            return <a href="" key={`sortButton${index}}`} title={sortbutton.display} className="dd-heading"  onClick={(e) => this.doSort(sortbutton.field, sortbutton.display, this.props.sortdir,e)}>
               {sortbutton.display}
             </a>;
           })

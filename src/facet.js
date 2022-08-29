@@ -147,6 +147,21 @@ window.facets = {
         "type": "phrase",
         "col": "",
     },
+    "smartFAQSettings": {
+      "enabled": true,
+      "count": 5,
+      "loadMoreCount": 2,
+      "limit": 10
+    },
+    "suggestSmartFAQs": {
+        "enabled": true,
+        "limit": 3
+    },
+    "trendingSearch": {
+        "enabled": false,
+        "cname":"",
+		"limit": "5"
+    },
     "topQuery": true,
     "topQueryFields": {
         "apikey": "",
@@ -170,5 +185,5 @@ window.facets = {
     "defaultType": "AND",
     "apikey": "",
     "autologout": true,
-    "pluginDomain": ""
+    "pluginDomain": "https://smartfaqs.searchblox.com",
 };

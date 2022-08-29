@@ -1,6 +1,6 @@
 import InlineWorker from 'inline-worker';
 
-export class Recorder {
+class Recorder {
   constructor(source, cfg) {
     this.config = {
       bufferLen: 4096,

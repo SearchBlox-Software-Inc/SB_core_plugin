@@ -39,9 +39,12 @@ export const getSBResponse = (parameters) => {
     if(localStorage.getItem("pcode") !== null && localStorage.getItem("pcode") !== "" && localStorage.getItem("pcode") !== undefined) {
       parameters.pcode = localStorage.getItem("pcode");
     }
-
+    parameters.smartfaqdisable = true;
     return axios.get(pluginDomain +"/rest/v2/api/search?" + qs.stringify(parameters),{headers:{"Authorization": "Bearer " + localStorage.getItem("searchToken")}})
     .then((response)=>{
+      if(response.data && response.data.pcode) {
+        localStorage.setItem("pcode",response.data.pcode);
+      }
       let uidArray = [];
       if(response.data && response.data.ads && response.data.ads.length > 0) {
         let adsResponse = response.data.ads;
@@ -85,6 +88,7 @@ export const getAutoSuggest = (query) => {
       colString = colString + "&col=" + value;
     });
   }
+
   if(window.smartSuggest.SmartSuggest.length > 0) {
     let smartArray = [];
     for(let i=0;i<window.smartSuggest.SmartSuggest.length;i++) {
@@ -128,32 +132,42 @@ export const getAutoSuggest = (query) => {
   }
 };
 
+export const getTrendingData = () => {
+  const cname = defaults.trendingSearch.cname;
+
+  let pluginDomain = defaults.pluginDomain;
+  const pd = document.getElementById("sb_plugin_domain");
+  if (pd !== undefined && pd !== null && pd !== "") {
+    pluginDomain = pd.value;
+  }
+  return axios.get(pluginDomain + "/rest/v2/api/search?query=*&xsl=json&sort=alpha&sortdir=asc&pagesize=" + defaults.trendingSearch.limit + "&cname=" + cname, {
+      headers: {
+        "Authorization": "Bearer " + localStorage.getItem("searchToken")
+      }
+    })
+    .then((response) => {
+      return response;
+    })
+    .catch((error) => {
+      if (error.response && error.response.data) {
+        return error.response.data;
+      } else {
+        return error;
+      }
+    });
+};
+
 export const getSuggestClickCount = (parameters) => {
   let urlParameters = Object.assign({}, qs.parse(window.location.search));
   if(Object.keys(parameters).length !== 0){
     if(parameters.query.indexOf('"') >= 0) {
       parameters.query = parameters.query.replace(/['"]+/g, '');
     }
-    // let colArray = [];
-    // let colString = "";
-    // if(defaults.defaultCollections.length > 0){
-    //   colArray = defaults.defaultCollections.slice();
-    // }
-    // else if(urlParameters.col && urlParameters.col.constructor === Array) {
-    //   colArray = urlParameters.col.slice();
-    // }
-    // else if(urlParameters.col && urlParameters.col.constructor === String) {
-    //   colArray.push(urlParameters.col);
-    // }
-    // if(colArray !== null && colArray !== undefined && colArray !== "" && colArray.length > 0) {
-    //   colArray.map((value,key) => {
-    //     colString = colString + "&col=" + value;
-    //   });
-    // }
     let clickObj = {
         query: decodeURIComponent(parameters.query),
         suggestion:parameters.suggest
     };
+
     return axios.post(defaults.pluginDomain + "/ui/v1/analytics/suggest",clickObj)
     .then((response)=>{
       return response;
@@ -180,6 +194,21 @@ export const getFeaturedResultClickCount = (parameters) => {
       .catch((error)=>{
         return error;
       });
+    }
+};
+
+export const smartFaqDisplayCount = (faqArr) => {
+  if(faqArr.length > 0){
+    let urlParameters = Object.assign({}, qs.parse(window.location.search));
+    let clickObj = {
+        smartfaq: faqArr,
+        query: urlParameters.query,
+        pcode:localStorage.getItem("pcode"),
+        action:"show"
+    };
+     return axios.post(defaults.pluginDomain + "/rest/v2/api/smart-faq/impression",clickObj)
+       .then(response => response)
+       .catch(error => error);
     }
 };
 
@@ -511,124 +540,121 @@ export function parseSBResponse(response){
       let results = [];
       let resultInfo = {};
       let featuredResults = [];
+      let smartFAQs = [];
 
       // REFACTORING FACETS START
-        if(sbResponse.facets){ // CHECKING IF FACETS ARE AVAILABLE FOR RESPONSE
-          if(sbResponse.facets.constructor === Array){ // CHECKING IF FACET IS AN ARRAY(MORE THAN ONE FACET)
-            for(let i = 0, len = sbResponse.facets.length; i < len; i++){
-              let sbFacet1 = sbResponse.facets[i]; // PICKING SINGLE FACET TO RESTRUCTURE
-              for(let j = 0, len1 = sbFacet1.facet.length; j < len1; j++){
-               let sbFacet = sbFacet1.facet[j];
-              let facet = {};
-              facet[sbFacet["name"]] = [];
-              facet["display"] = "";
-              let facetHeading = "";
-              let facetField = "";
+      if(sbResponse.facets){ // CHECKING IF FACETS ARE AVAILABLE FOR RESPONSE
+        if(sbResponse.facets.constructor === Array){ // CHECKING IF FACET IS AN ARRAY(MORE THAN ONE FACET)
+          for(let i = 0, len = sbResponse.facets.length; i < len; i++){
+            let sbFacet1 = sbResponse.facets[i]; // PICKING SINGLE FACET TO RESTRUCTURE
+            for(let j = 0, len1 = sbFacet1.facet.length; j < len1; j++){
+              let sbFacet = sbFacet1.facet[j];
+            let facet = {};
+            facet[sbFacet["name"]] = [];
+            facet["display"] = "";
+            let facetHeading = "";
+            let facetField = "";
 
-              if(sbFacet["int"]){ // CHECKING IF FACET HAS FILTERS
-                let filters = [];
-                if(sbFacet["int"].constructor === Array){ //CHECKING IF THERE ARE MORE THAN ON FILTER
-                  if(sbFacet["int"].length > 0) {
-                    for(let k = 0, len1 = defaults.facets.length; k < len1; k++){
-                      let defaultFacets = defaults.facets[k];
-                       if(sbFacet['name'] === defaultFacets['field']){
-                         facetHeading = defaultFacets['display'];
-                         facetField = defaultFacets['field'];
-                       }
-                     }
-                    if(facetHeading === "") {
-                      facetHeading = sbFacet['name'];
-                      facetField = sbFacet['name'];
-                    }
-                  }
-                  for(let fc = 0, lenfc = sbFacet["int"].length; fc < lenfc; fc++){
-                    let sbFilter = sbFacet["int"][fc]; // PICKING SINGLE SB FILTER VALUE TO RESTRUCTURE
-                    let rangeFacetValues = "";
-                    let rangeFormat = "";
-                    let urlParameters = "";
-                    let filterValue = "";
-                    if(sbFilter["from"] || sbFilter["to"]){  // IF FILTER IS DATE TYPE
-                      if(sbFilter["to"]!==null){
-                        rangeFacetValues = moment(sbFilter["to"]).format('YYYY-MM-DDTHH:mm:ss') + " TO " +moment(sbFilter["from"]).format('YYYY-MM-DDTHH:mm:ss');
-                        //rangeFormat = "[" + moment(sbFilter["to"]).utc().format('YYYY-MM-DDTHH:mm:ss') + "TO" +moment(sbFilter["from"]).utc().format('YYYY-MM-DDTHH:mm:ss') +"]";
-                        rangeFormat = "[" + moment(sbFilter["from"]).utc().format('YYYY-MM-DDTHH:mm:ss') + "TO" +moment(sbFilter["to"]).utc().format('YYYY-MM-DDTHH:mm:ss') +"]";
+            if(sbFacet["int"]){ // CHECKING IF FACET HAS FILTERS
+              let filters = [];
+              if(sbFacet["int"].constructor === Array){ //CHECKING IF THERE ARE MORE THAN ON FILTER
+                if(sbFacet["int"].length > 0) {
+                  for(let k = 0, len1 = defaults.facets.length; k < len1; k++){
+                    let defaultFacets = defaults.facets[k];
+                      if(sbFacet['name'] === defaultFacets['field']){
+                        facetHeading = defaultFacets['display'];
+                        facetField = defaultFacets['field'];
                       }
-                      else{
-                        rangeFacetValues = moment(sbFilter["from"].replace(/.000Z/g, ""), "YYYY-MM-DDTHH:mm:ss").fromNow();
-                        rangeFormat = "[" + moment(sbFilter["from"].replace(/.000Z/g, "")).format('YYYY-MM-DDTHH:mm:ss') + "TO*]";
-                        //rangeFacetValues = moment(sbFilter["from"]).fromNow();
-                        //rangeFormat = "[" + moment(sbFilter["from"]).format('YYYY-MM-DDTHH:mm:ss') + "TO*]";
                     }
-                   urlParameters = Object.assign({}, qs.parse(window.location.search));
-                   if(urlParameters['f.'+sbFacet['name']+'.filter']) {
-                     if(urlParameters['f.'+sbFacet['name']+'.filter'].constructor === Array) {
-                       for(let i = 0, len = urlParameters['f.'+sbFacet['name']+'.filter'].length; i < len; i++){
-                         if(rangeFormat === urlParameters['f.'+sbFacet['name']+'.filter'][i]) {
-                            sbFilter["filter"] = "true";
-                         }
-                       }
-                     }
-                     else {
-                       if(rangeFormat === urlParameters['f.'+sbFacet['name']+'.filter']) {
-                       // if(rangeFormat.split('T')[0] === urlParameters['f.'+sbFacet['name']+'.filter'].split('T')[0]) {
+                  if(facetHeading === "") {
+                    facetHeading = sbFacet['name'];
+                    facetField = sbFacet['name'];
+                  }
+                }
+                for(let fc = 0, lenfc = sbFacet["int"].length; fc < lenfc; fc++){
+                  let sbFilter = sbFacet["int"][fc]; // PICKING SINGLE SB FILTER VALUE TO RESTRUCTURE
+                  let rangeFacetValues = "";
+                  let rangeFormat = "";
+                  let urlParameters = "";
+                  let filterValue = "";
+                  if(sbFilter["from"] || sbFilter["to"]){  // IF FILTER IS DATE TYPE
+                    if(sbFilter["to"]!==null){
+                      rangeFacetValues = moment(sbFilter["to"]).format('YYYY-MM-DDTHH:mm:ss') + " TO " +moment(sbFilter["from"]).format('YYYY-MM-DDTHH:mm:ss');
+                      //rangeFormat = "[" + moment(sbFilter["to"]).utc().format('YYYY-MM-DDTHH:mm:ss') + "TO" +moment(sbFilter["from"]).utc().format('YYYY-MM-DDTHH:mm:ss') +"]";
+                      rangeFormat = "[" + moment(sbFilter["from"]).utc().format('YYYY-MM-DDTHH:mm:ss') + "TO" +moment(sbFilter["to"]).utc().format('YYYY-MM-DDTHH:mm:ss') +"]";
+                    }
+                    else{
+                      rangeFacetValues = moment(sbFilter["from"].replace(/.000Z/g, ""), "YYYY-MM-DDTHH:mm:ss").fromNow();
+                      rangeFormat = "[" + moment(sbFilter["from"].replace(/.000Z/g, "")).format('YYYY-MM-DDTHH:mm:ss') + "TO*]";
+                      //rangeFacetValues = moment(sbFilter["from"]).fromNow();
+                      //rangeFormat = "[" + moment(sbFilter["from"]).format('YYYY-MM-DDTHH:mm:ss') + "TO*]";
+                  }
+                  urlParameters = Object.assign({}, qs.parse(window.location.search));
+                  if(urlParameters['f.'+sbFacet['name']+'.filter']) {
+                    if(urlParameters['f.'+sbFacet['name']+'.filter'].constructor === Array) {
+                      for(let i = 0, len = urlParameters['f.'+sbFacet['name']+'.filter'].length; i < len; i++){
+                        if(rangeFormat === urlParameters['f.'+sbFacet['name']+'.filter'][i]) {
                           sbFilter["filter"] = "true";
-                       }
-                     }
-                   }
+                        }
+                      }
+                    }
+                    else {
+                      if(rangeFormat === urlParameters['f.'+sbFacet['name']+'.filter']) {
+                      // if(rangeFormat.split('T')[0] === urlParameters['f.'+sbFacet['name']+'.filter'].split('T')[0]) {
+                        sbFilter["filter"] = "true";
+                      }
+                    }
+                  }
+                  filters.push({
+                    filterName: rangeFacetValues,
+                    count: sbFilter["count"],
+                    filterSelect: sbFilter["filter"],
+                    fromValue:rangeFormat,
+                    rangeField:sbFacet['name']
+                  });
+                  }
+                  if(sbFilter["name"]){ // IF FILTER IS STRING TYPE AND NOT DATE
                     filters.push({
-                      filterName: rangeFacetValues,
+                      filterName: sbFilter["name"],
                       count: sbFilter["count"],
-                      filterSelect: sbFilter["filter"],
-                      fromValue:rangeFormat,
-                      rangeField:sbFacet['name']
-                    });
-                    }
-                    if(sbFilter["name"]){ // IF FILTER IS STRING TYPE AND NOT DATE
-                      filters.push({
-                        filterName: sbFilter["name"],
-                        count: sbFilter["count"],
-                        filterSelect: sbFilter["filter"]
-                      });
-                    }
-                  }
-                }else if(sbFacet["int"].constructor === Object){
-                  if(sbFacet["int"]["name"]){ // IF FILTER IS STRING TYPE AND NOT DATE
-                    filters.push({
-                      filterName: sbFacet["int"]["name"],
-                      count: sbFacet["int"]["count"],
-                      filterSelect: sbFacet["int"]["filter"]
+                      filterSelect: sbFilter["filter"]
                     });
                   }
                 }
-                filters = _.orderBy(filters, 'filterSelect', 'desc');
-                facet[sbFacet["name"]] = filters; // ASSIGNING FILTERS TO FACET NAME NODE OF OBJECT
-                facet["display"] = facetHeading;
-                facet['facetField'] = facetField;
+              }else if(sbFacet["int"].constructor === Object){
+                if(sbFacet["int"]["name"]){ // IF FILTER IS STRING TYPE AND NOT DATE
+                  filters.push({
+                    filterName: sbFacet["int"]["name"],
+                    count: sbFacet["int"]["count"],
+                    filterSelect: sbFacet["int"]["filter"]
+                  });
                 }
-                facets.push(facet); // APPENDING SINGLE FACET DATA TO ARRAY OF FACETS
-            }
-            }
+              }
+              filters = _.orderBy(filters, 'filterSelect', 'desc');
+              facet[sbFacet["name"]] = filters; // ASSIGNING FILTERS TO FACET NAME NODE OF OBJECT
+              facet["display"] = facetHeading;
+              facet['facetField'] = facetField;
+              }
+              facets.push(facet); // APPENDING SINGLE FACET DATA TO ARRAY OF FACETS
           }
-        } // REFACTORING FACETS END
+          }
+        }
+      } // REFACTORING FACETS END
 
       // REFACTORING RESULTS START
       if(sbResponse){
         if(sbResponse.result){
-          let sbResults = sbResponse.result;
-          if(sbResults.constructor === Array){
-            results = sbResults;
-          }else if(sbResults.constructor === Object){
-            results.push(sbResults);
-          }
+          results = refactorToArray(sbResponse.result);
         }
+
         if(sbResponse.ads){
-          let sbResultAds = sbResponse.ads;
-          if(sbResultAds.constructor === Array){
-            featuredResults = sbResultAds;
-          }else if(sbResultAds.constructor === Object){
-            featuredResults.push(sbResultAds);
-          }
+          featuredResults = refactorToArray(sbResponse.ads);
         }
+
+        if(sbResponse.smartFaq){
+          smartFAQs = refactorToArray(sbResponse.smartFaq);
+        }
+
         if(sbResponse["currentPage"] !== undefined && sbResponse["currentPage"] !== null)resultInfo.currentPage = parseInt(sbResponse["currentPage"]);
         if(sbResponse["filter"] !== undefined && sbResponse["filter"] !== null) resultInfo.filter = sbResponse["filter"];
         if(sbResponse["hits"] !== undefined && sbResponse["hits"] !== null) resultInfo.hits = parseInt(sbResponse["hits"]);
@@ -650,6 +676,7 @@ export function parseSBResponse(response){
         facets,
         results,
         featuredResults,
+        smartFAQs,
         resultInfo
       };
     }
@@ -658,7 +685,50 @@ export function parseSBResponse(response){
       facets: [],
       results: [],
       featuredResults:[],
+      smartFAQs: [],
       resultInfo: {}
     };
   }
 }
+
+export const refactorToArray = data => {
+  if(data.constructor === Array) {
+    return data;
+  } else if(data.constructor === Object) {
+    const array = [];
+    return array.concat(data);
+  }
+};
+
+export const callSmartFAQAction = payload => {
+  const urlParameters = Object.assign({}, qs.parse(window.location.search));
+
+  if(Object.keys(payload).length !== 0) {
+    payload.query = urlParameters.query;
+
+    const pcode = localStorage.getItem('pcode');
+
+    if(pcode) {
+      payload.pcode = pcode;
+    }
+
+    return axios.post(`${defaults.pluginDomain}/rest/v2/api/smart-faq/action`, payload)
+      .then(response => response)
+      .catch(error => error);
+  }
+};
+
+export const getSmartFAQS = (query, limit) => {
+  const { pluginDomain, defaultCollections } = defaults;
+  const collectionParameter = defaultCollections.length ? `&col=${[...defaultCollections]}` : '';
+
+  return axios.get(`${pluginDomain}/rest/v2/api/smart-faq/list?status=active&query=${query}${collectionParameter}&size=${limit}`)
+    .then(response => response)
+    .catch(error => error);
+};
+
+export const getSelectedSmartFAQ = uid => {
+  return axios.get(`${defaults.pluginDomain}/rest/v2/api/smart-faq/get/${uid}`)
+    .then(response => response)
+    .catch(error => error);
+};

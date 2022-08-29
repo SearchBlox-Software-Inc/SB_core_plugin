@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import * as $ from 'jquery';
-import * as qs from 'query-string';
-import * as defaults from '../../Common/Defaults';
+// import * as $ from 'jquery';
+// import * as qs from 'query-string';
+// import * as defaults from '../../Common/Defaults';
 import * as parser from '../../Common/SbCore';
 import _ from 'lodash';
 import SelectedFiltersInMultipleSelectionComponent from './SelectedFiltersInMultipleSelection';

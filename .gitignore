@@ -1,3 +1,4 @@
 /dist
 /node_modules
 /polyfill.min.js
+package-lock.json

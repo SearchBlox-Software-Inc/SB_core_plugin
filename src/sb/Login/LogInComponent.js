@@ -1,29 +1,23 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import * as $ from 'jquery';
-import * as qs from 'query-string';
-import * as parser from '../Common/SbCore';
+// import * as $ from 'jquery';
+// import * as qs from 'query-string';
+// import * as parser from '../Common/SbCore';
 import * as defaults from '../Common/Defaults';
-import { InputGroup, InputGroupAddon, Button, Input,Modal, ModalHeader, ModalBody, ModalFooter,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
+import { InputGroup, Button, Input,
   Form,
   FormGroup,
-  Container,
   Col,
-  NavLink,
   Row,
   Label,
-  FormFeedback
  } from 'reactstrap';
 import '../css/login_component.css';
 import axios from 'axios';
-import { history } from '../low_level_components/custom_history';
+// import { history } from '../low_level_components/custom_history';
 import Notify from "react-notification-alert";
 import * as moment from 'moment';
 const logoImg = require("../../images/sb_banner.png");
+
 class LogInComponent extends React.Component{
   constructor(){
     super();

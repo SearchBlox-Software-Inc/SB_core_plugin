@@ -1,7 +1,5 @@
 import React, {Fragment } from 'react';
-import * as $ from 'jquery';
 import axios from 'axios';
-import * as qs from 'query-string';
 import * as parser from '../Common/SbCore';
 import {topQueryFields , pluginDomain} from '../Common/Defaults';
 import '../css/topquery_component.css';

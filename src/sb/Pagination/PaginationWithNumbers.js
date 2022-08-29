@@ -76,11 +76,11 @@ export default class PaginationWithPageNumbers extends Component{
     let urlParameters = Object.assign({}, qs.parse(window.location.search));
     if(lastpage !== 1){
       return(
-        <Pagination aria-label="Page navigation example">
+        <Pagination aria-label="Page navigation">
             {
               (1 === currentpage)
               ?
-              <li/>
+              null
               :
               <PaginationItem>
                     <PaginationLink href="#" title="Previous"  onClick={(e)=>this.getPage(e,currentpage - 1)}>
@@ -91,7 +91,7 @@ export default class PaginationWithPageNumbers extends Component{
             {
               this.state.pagesArray.map((val)=>{
                 return <PaginationItem key={val} className={[(urlParameters.page === val || urlParameters.page === val.toString())?'active' :'',(!urlParameters.page && val === 1)?'active' :''].join(" ")}>
-                  <PaginationLink href="#" aria-label={val} title={val} onKeyDown={(e)=> this.keydown(e,val)} onClick={(e)=>{(urlParameters.page === val || urlParameters.page === val.toString())? this.currentPage(e): this.getPage(e,val);}} tabIndex={`${(urlParameters.page === val || urlParameters.page === val.toString())?"-1" :"0"}`}>{val}
+                  <PaginationLink href="#" aria-label={val.toString()} title={val} onKeyDown={(e)=> this.keydown(e,val)} onClick={(e)=>{(urlParameters.page === val || urlParameters.page === val.toString())? this.currentPage(e): this.getPage(e,val);}} tabIndex={`${(urlParameters.page === val || urlParameters.page === val.toString())?"-1" :"0"}`}>{val}
                   </PaginationLink>
                 </PaginationItem>;
               })
@@ -99,7 +99,7 @@ export default class PaginationWithPageNumbers extends Component{
             {
               (lastpage === currentpage)
               ?
-              <li/>
+              null
               :
               <PaginationItem>
                     <PaginationLink href="#"  title="Next" onClick={(e)=>this.getPage(e,currentpage + 1)}>
