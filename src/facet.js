@@ -185,5 +185,5 @@ window.facets = {
     "defaultType": "AND",
     "apikey": "",
     "autologout": true,
-    "pluginDomain": "https://smartfaqs.searchblox.com",
+    "pluginDomain": "",
 };
