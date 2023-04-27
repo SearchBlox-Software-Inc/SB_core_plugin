@@ -332,7 +332,8 @@ eg: "pluginDomain": "https://13.10.24.161:8443"
 
 #**Steps to Upload Plugins in SearchBlox:**
 
-- To upload a custom plugin through UI, it should be in zip file format. Rename the zip file for the plugin (whatever the custom plugin name you prefer. Eg: customui.zip).
+- Run the build script at the plugin path using the command "npm run build". This generates a folder called "dist". 
+- To upload a custom plugin through UI, it should be in zip file format. Compress the "dist" folder generated from by the build command to zip format and rename it (to whatever custom plugin name you prefer. Eg: customui.zip).
 - Start SearchBlox service. To install and start SearchBlox refer the following link:
   https://developer.searchblox.com/docs/installing-searchblox-on-windows
 - Once SearchBlox is started, From Admin Console, Go to Dashboard > Collections > Search Settings Tab and click on the Upload Search Template button.
