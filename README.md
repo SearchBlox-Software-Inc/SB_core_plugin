@@ -315,7 +315,7 @@ We can create custom templates in admin console and providing that template name
 
 **Installation:**
 
-- Install node.js using the link below (probably 14 or higher):
+- Install node.js using the link below (probably 14):
 - https://nodejs.org/en/download/
 
 **Steps to Import node modules into project:**
